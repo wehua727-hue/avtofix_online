@@ -984,7 +984,7 @@ const Index = () => {
                   </span>
                   <div className="min-w-0 flex-1">
                     <p className="text-[8px] sm:text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Ish vaqti</p>
-                    <p className="text-[10px] sm:text-sm font-bold text-gray-900 dark:text-white mt-0.5 truncate">Har kuni 07:00 - 21:00</p>
+                    <p className="text-[10px] sm:text-sm font-bold text-gray-900 dark:text-white mt-0.5 truncate">24/7</p>
                   </div>
                 </div>
               </div>

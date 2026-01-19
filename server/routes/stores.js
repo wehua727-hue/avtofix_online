@@ -34,7 +34,33 @@ router.get("/", async (req, res) => {
       .populate('createdBy', 'name role') // Qo'shgan odamning nomi va roli
       .populate('manager', 'name role') // Bosh menedjer
       .sort({ createdAt: -1 });
-    res.json(stores);
+    
+    // Har bir magazin uchun mahsulotlar sonini hisoblash (variantlar bilan)
+    const Product = (await import("../models/Product.js")).default;
+    const storesWithProductCount = await Promise.all(
+      stores.map(async (store) => {
+        // Asosiy mahsulotlar soni
+        const products = await Product.find({ storeId: store._id });
+        
+        // Variantlar sonini hisoblash
+        let totalCount = 0;
+        products.forEach(product => {
+          // Asosiy mahsulot
+          totalCount += 1;
+          // Variantlar
+          if (Array.isArray(product.variants) && product.variants.length > 0) {
+            totalCount += product.variants.length;
+          }
+        });
+        
+        return {
+          ...store.toObject(),
+          productCount: totalCount
+        };
+      })
+    );
+    
+    res.json(storesWithProductCount);
   } catch (error) {
     console.error("Error fetching stores:", error);
     // MongoDB ulanmasa ham empty array qaytarish

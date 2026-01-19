@@ -28,21 +28,22 @@ router.get("/", async (_req, res) => {
 
 router.post("/register", async (req, res) => {
   try {
-    const { name, phone, address, password, latitude, longitude, cars } = req.body;
+    const { name, phone, region, address, password, latitude, longitude, cars } = req.body;
 
     // Debug: Log incoming data
     console.log("=== REGISTER REQUEST ===");
     console.log("Name:", name);
     console.log("Phone:", phone);
+    console.log("Region:", region);
     console.log("Address:", address);
     console.log("Latitude:", latitude);
     console.log("Longitude:", longitude);
     console.log("Cars:", cars);
 
     // Validate required fields (address endi ixtiyoriy)
-    if (!name || !phone || !password) {
+    if (!name || !phone || !password || !region) {
       console.log("❌ Missing required fields");
-      return res.status(400).json({ error: "Ism, telefon va parol majburiy" });
+      return res.status(400).json({ error: "Ism, telefon, viloyat va parol majburiy" });
     }
 
     // Validate phone number format (should be 9 digits)
@@ -83,6 +84,7 @@ router.post("/register", async (req, res) => {
     const user = await User.create({
       name: name.trim(),
       phone: phone.trim(),
+      region: region.trim(),
       address: address ? address.trim() : "",
       password: hashedPassword,
       role: "user",

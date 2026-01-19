@@ -46,6 +46,7 @@ import {
   ListOrdered,
   Loader2,
   Menu,
+  Package,
   Phone,
   Pencil,
   Plus,
@@ -3045,9 +3046,32 @@ const AdminPanel = () => {
                 <Card className="rounded-2xl border border-white/10 bg-white/5">
                   <CardHeader className="flex flex-col gap-4">
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                      <CardTitle className="text-white text-lg">
-                        Mahsulotlar ro'yxati
-                      </CardTitle>
+                      <div>
+                        <CardTitle className="text-white text-lg mb-2">
+                          Mahsulotlar ro'yxati
+                        </CardTitle>
+                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-500/20 border border-blue-500/30 w-fit">
+                          <Package className="h-4 w-4 text-blue-400" />
+                          <span className="text-sm font-semibold text-blue-300">
+                            Jami: {(() => {
+                              let total = 0;
+                              let variantsCount = 0;
+                              storeProducts.forEach(p => {
+                                // Asosiy mahsulot
+                                total += 1;
+                                // Variantlar - variantSummaries yoki variants
+                                const variants = p.variantSummaries || p.variants;
+                                if (Array.isArray(variants) && variants.length > 0) {
+                                  variantsCount += variants.length;
+                                  total += variants.length;
+                                }
+                              });
+                              console.log('� Mahsnulotlar:', storeProducts.length, 'Variantlar:', variantsCount, 'Jami:', total);
+                              return total;
+                            })()} ta mahsulot (asosiy: {storeProducts.length})
+                          </span>
+                        </div>
+                      </div>
                     </div>
                     <Input
                       type="text"

@@ -127,15 +127,18 @@ const Cart = () => {
       const rawAddress = customLocation?.address ?? user.address ?? '';
       const trimmedAddress = rawAddress.trim();
 
-      if (!trimmedAddress) {
-        toast.error('Yetkazib berish manzilini kiriting');
+      // Agar aniq manzil bo'lmasa, viloyatni ishlatamiz
+      const finalAddress = trimmedAddress || user.region || '';
+      
+      if (!finalAddress) {
+        toast.error('Viloyat yoki manzil topilmadi');
         setShowLocationModal(true);
         return;
       }
 
       const deliveryAddress = {
-        address: trimmedAddress,
-        city: (customLocation?.city ?? user.city ?? '').trim(),
+        address: finalAddress,
+        city: (customLocation?.city ?? user.city ?? user.region ?? '').trim(),
         phone: (customLocation?.phone ?? user.phone ?? '').trim(),
       };
 
@@ -439,7 +442,7 @@ const Cart = () => {
         onConfirm={handleOrderConfirm}
         onUpdateAddress={handleUpdateAddress}
         userLocation={{
-          address: user?.address || (user?.region && user?.district ? `${user.region}, ${user.district}` : ''),
+          address: user?.address || user?.region || '',
           city: user?.city || user?.region || '',
           phone: user?.phone
         }}
