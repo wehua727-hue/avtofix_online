@@ -1,0 +1,58 @@
+===============================================
+QUYIDAGI KODNI QO'LDA QO'YING
+===============================================
+
+server/routes/products.js faylida 121-qatordan 151-qatorgacha bo'lgan
+"/suggestions" endpoint'ini BUTUNLAY O'CHIRIB, quyidagi kod bilan almashtiring:
+
+// Get search suggestions (autocomplete)
+router.get("/suggestions", async (req, res) => {
+  try {
+    const { q } = req.query;
+    
+    if (!q || q.trim().length < 1) {
+      return res.json([]);
+    }
+    
+    const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const escapedQuery = escapeRegex(q.trim());
+    const searchRegex = `^${escapedQuery}`;
+    
+    console.log('💡 Suggestions query:', q);
+    
+    const products = await Product.find({
+      $or: [{ isHidden: { $ne: true } }, { isHidden: { $exists: false } }],
+      name: { $regex: searchRegex, $options: 'i' }
+    })
+      .select('name variantSummaries')
+      .limit(20)
+      .lean();
+    
+    const allSuggestions = [];
+    
+    products.forEach(product => {
+      allSuggestions.push(product.name);
+      
+      if (Array.isArray(product.variantSummaries) && product.variantSummaries.length > 0) {
+        product.variantSummaries.forEach(variant => {
+          if (variant && variant.name) {
+            allSuggestions.push(`${product.name} - ${variant.name}`);
+          }
+        });
+      }
+    });
+    
+    const uniqueSuggestions = [...new Set(allSuggestions)].slice(0, 10);
+    
+    console.log('💡 Found:', uniqueSuggestions.length, 'suggestions');
+    
+    res.json(uniqueSuggestions);
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).json({ error: "Xatolik" });
+  }
+});
+
+===============================================
+KEYIN SERVERNI QAYTA ISHGA TUSHIRING!
+===============================================

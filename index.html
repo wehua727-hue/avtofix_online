@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="ru" translate="no">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="google" content="notranslate" />
+    <meta http-equiv="Content-Language" content="ru" />
+    <link rel="icon" href="/logo.webp">
+    <title>AvtoFix</title>
+    
+    <!-- DNS prefetch и preconnect для быстрого соединения -->
+    <link rel="dns-prefetch" href="/api">
+    <link rel="preconnect" href="/api" crossorigin>
+    
+    <!-- Preload критических ресурсов -->
+    <link rel="preload" href="/logo.webp" as="image">
+    
+    <!-- Оптимизация рендеринга -->
+    <meta name="color-scheme" content="dark light">
+  </head>
+
+  <body>
+    <div id="root"></div>
+
+    <!-- Modulepreload для быстрой загрузки JS -->
+    <script type="module" src="/client/main.jsx"></script>
+  </body>
+</html>

@@ -1,0 +1,597 @@
+/** @import must precede all other statements */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Favorite animations */
+
+@keyframes favorite-pop-add {
+  0% {
+    transform: scale(0.85);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes favorite-pop-remove {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(0.9);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.favorite-star-pop-add {
+  animation: favorite-pop-add 0.25s ease-out forwards;
+}
+
+.favorite-star-pop-add svg {
+  filter: drop-shadow(0 0 12px rgba(255, 215, 0, 0.6));
+}
+
+.favorite-star-pop-remove {
+  animation: favorite-pop-remove 0.2s ease-out forwards;
+}
+
+.favorite-star-pop-remove svg {
+  filter: none;
+}
+
+@keyframes favorite-fly {
+  0% {
+    transform: translate(0, 0) scale(0.7);
+    opacity: 1;
+  }
+  50% {
+    transform: translate(
+        calc(var(--favorite-fly-x) * 0.6),
+        calc(var(--favorite-fly-y) * 0.4)
+      )
+      scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--favorite-fly-x), var(--favorite-fly-y))
+      scale(0.6);
+    opacity: 0;
+  }
+}
+
+.favorite-fly-star {
+  position: fixed;
+  width: 14px;
+  height: 14px;
+  background: radial-gradient(circle, #ffd700 0%, #ffb347 70%);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  animation: favorite-fly 0.55s ease-in-out forwards;
+  box-shadow: 0 0 12px rgba(255, 215, 0, 0.6);
+}
+
+@keyframes favorite-particle-burst {
+  0% {
+    transform: translate(0, 0) scale(0.6);
+    opacity: 1;
+  }
+  80% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translate(var(--favorite-particle-x), var(--favorite-particle-y))
+      scale(0.2);
+    opacity: 0;
+  }
+}
+
+.favorite-particle {
+  position: fixed;
+  width: 6px;
+  height: 6px;
+  background: radial-gradient(
+    circle,
+    #fff2b0 0%,
+    #ffd700 65%,
+    rgba(255, 215, 0, 0.4) 100%
+  );
+  border-radius: 50%;
+  pointer-events: none;
+  animation: favorite-particle-burst 0.5s ease-out forwards;
+  z-index: 9998;
+}
+
+@keyframes favorite-counter-bounce-add {
+  0% {
+    transform: scale(0.85);
+  }
+  50% {
+    transform: scale(1.25);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes favorite-counter-bounce-remove {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(0.85);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.favorite-counter-bounce-add {
+  animation: favorite-counter-bounce-add 0.3s ease-out forwards;
+}
+
+.favorite-counter-bounce-remove {
+  animation: favorite-counter-bounce-remove 0.25s ease-out forwards;
+}
+
+@layer base {
+  /**
+   * Tailwind CSS theme
+   * tailwind.config.ts expects the following color variables to be expressed as HSL values.
+   * A different format will require also updating the theme in tailwind.config.ts.
+  */
+  :root {
+    --background: 0 0% 95%; /* Light gray background */
+    --foreground: 0 0% 13%; /* Dark gray/black text */
+
+    --card: 0 0% 100%; /* White card background */
+    --card-foreground: 0 0% 13%; /* Dark gray/black text */
+
+    --popover: 0 0% 100%; /* White popover */
+    --popover-foreground: 0 0% 13%; /* Dark gray/black text */
+
+    --primary: 0 0% 60%; /* Gray as primary color */
+    --primary-foreground: 0 0% 100%; /* White text on primary */
+
+    --secondary: 0 0% 0%; /* Black secondary color */
+    --secondary-foreground: 0 0% 100%; /* White text on secondary */
+
+    --muted: 0 0% 85%; /* Medium gray for muted elements */
+    --muted-foreground: 0 0% 45%; /* Dark gray for muted text */
+
+    --accent: 0 100% 50%; /* Red accent color */
+    --accent-foreground: 0 0% 100%; /* White text on accent */
+
+    --destructive: 0 100% 50%; /* Red for destructive actions */
+    --destructive-foreground: 0 0% 100%; /* White text on destructive */
+
+    --border: 0 0% 90%; /* Light gray border */
+    --input: 0 0% 100%; /* White input background */
+    --ring: 0 100% 50%; /* Red ring focus */
+
+    --radius: 0.5rem;
+
+    --sidebar-background: 0 0% 95%; /* Light gray sidebar */
+    --sidebar-foreground: 0 0% 13%; /* Dark gray/black text */
+
+    --sidebar-primary: 0 0% 60%; /* Gray sidebar primary */
+    --sidebar-primary-foreground: 0 0% 100%; /* White text */
+
+    --sidebar-accent: 0 0% 0%; /* Black sidebar accent */
+    --sidebar-accent-foreground: 0 0% 100%; /* White text */
+
+    --sidebar-border: 0 0% 90%; /* Light gray sidebar border */
+    --sidebar-ring: 0 100% 50%; /* Red sidebar ring */
+  }
+
+  .dark {
+    --background: 0 0% 10%; /* Dark gray/black background */
+    --foreground: 0 0% 90%; /* Light gray text */
+
+    --card: 0 0% 15%; /* Slightly lighter dark gray card */
+    --card-foreground: 0 0% 90%; /* Light gray text */
+
+    --popover: 0 0% 15%; /* Slightly lighter dark gray popover */
+    --popover-foreground: 0 0% 90%; /* Light gray text */
+
+    --primary: 0 0% 40%; /* Medium gray as primary color */
+    --primary-foreground: 0 0% 100%; /* White text on primary */
+
+    --secondary: 0 0% 100%; /* White secondary color */
+    --secondary-foreground: 0 0% 0%; /* Black text on secondary */
+
+    --muted: 0 0% 30%; /* Darker gray for muted elements */
+    --muted-foreground: 0 0% 70%; /* Medium gray for muted text */
+
+    --accent: 0 100% 50%; /* Red accent color */
+    --accent-foreground: 0 0% 100%; /* White text on accent */
+
+    --destructive: 0 100% 50%; /* Red for destructive actions */
+    --destructive-foreground: 0 0% 100%; /* White text on destructive */
+
+    --border: 0 0% 25%; /* Medium gray border */
+    --input: 0 0% 20%; /* Dark gray input background */
+    --ring: 0 100% 50%; /* Red ring focus */
+
+    --sidebar-background: 0 0% 12%; /* Dark gray sidebar */
+    --sidebar-foreground: 0 0% 90%; /* Light gray text */
+
+    --sidebar-primary: 0 0% 40%; /* Medium gray sidebar primary */
+    --sidebar-primary-foreground: 0 0% 100%; /* White text */
+
+    --sidebar-accent: 0 0% 100%; /* White sidebar accent */
+    --sidebar-accent-foreground: 0 0% 0%; /* Black text */
+
+    --sidebar-border: 0 0% 25%; /* Medium gray sidebar border */
+    --sidebar-ring: 0 100% 50%; /* Red sidebar ring */
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html,
+  body {
+    @apply antialiased transition-colors duration-300;
+    min-height: 100vh;
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
+
+  /* Dark mode (default) */
+  .dark body {
+    @apply text-white;
+    background:
+      radial-gradient(circle at 10% 20%, rgba(255, 78, 80, 0.12), transparent 45%),
+      radial-gradient(circle at 90% 5%, rgba(255, 214, 0, 0.08), transparent 40%),
+      radial-gradient(circle at 50% 100%, rgba(67, 97, 238, 0.12), transparent 55%),
+      #06080f;
+  }
+
+  /* Light mode */
+  :root:not(.dark) body {
+    @apply text-gray-900;
+    background:
+      radial-gradient(circle at 10% 20%, rgba(255, 78, 80, 0.05), transparent 45%),
+      radial-gradient(circle at 90% 5%, rgba(255, 214, 0, 0.04), transparent 40%),
+      radial-gradient(circle at 50% 100%, rgba(67, 97, 238, 0.05), transparent 55%),
+      #f9fafb;
+  }
+
+  /* Override hardcoded dark backgrounds in light mode */
+  :root:not(.dark) .bg-\[\#06080f\],
+  :root:not(.dark) .bg-gray-900,
+  :root:not(.dark) .bg-black\/60,
+  :root:not(.dark) .bg-black\/40,
+  :root:not(.dark) .bg-black\/70,
+  :root:not(.dark) .bg-black\/80 {
+    background: #ffffff !important;
+  }
+
+  /* Light mode text colors */
+  :root:not(.dark) .text-white {
+    color: #1f2937 !important;
+  }
+
+  :root:not(.dark) .text-white\/70,
+  :root:not(.dark) .text-white\/65,
+  :root:not(.dark) .text-white\/60,
+  :root:not(.dark) .text-white\/50,
+  :root:not(.dark) .text-white\/45,
+  :root:not(.dark) .text-white\/40 {
+    color: #6b7280 !important;
+  }
+
+  /* Light mode card backgrounds */
+  :root:not(.dark) .bg-white\/5,
+  :root:not(.dark) .bg-white\/10,
+  :root:not(.dark) .bg-white\/\[0\.03\],
+  :root:not(.dark) .bg-white\/\[0\.06\] {
+    background: rgba(255, 255, 255, 1) !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+  }
+
+  /* Light mode borders */
+  :root:not(.dark) .border-white\/5,
+  :root:not(.dark) .border-white\/10,
+  :root:not(.dark) .border-white\/15,
+  :root:not(.dark) .border-white\/20 {
+    border-color: rgba(0, 0, 0, 0.1) !important;
+  }
+
+  /* Light mode surface card */
+  :root:not(.dark) .surface-card {
+    background: rgba(255, 255, 255, 0.98) !important;
+    border-color: rgba(0, 0, 0, 0.08) !important;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+  }
+
+  /* Light mode backdrop blur elements */
+  :root:not(.dark) .backdrop-blur-xl,
+  :root:not(.dark) .backdrop-blur-lg {
+    background: rgba(255, 255, 255, 0.98) !important;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+  }
+
+  /* Light mode gray text */
+  :root:not(.dark) .text-gray-400,
+  :root:not(.dark) .text-gray-300 {
+    color: #6b7280 !important;
+  }
+
+  /* Light mode specific backgrounds */
+  :root:not(.dark) .bg-gray-900,
+  :root:not(.dark) .bg-gray-950,
+  :root:not(.dark) .bg-gray-950\/80,
+  :root:not(.dark) .bg-black,
+  :root:not(.dark) .bg-black\/30,
+  :root:not(.dark) .bg-black\/20 {
+    background: #ffffff !important;
+  }
+
+  /* Light mode hover states */
+  :root:not(.dark) .hover\:bg-gray-100:hover,
+  :root:not(.dark) .hover\:bg-white\/10:hover {
+    background: #f3f4f6 !important;
+  }
+
+  /* Light mode active/pressed states */
+  :root:not(.dark) .active\:bg-gray-200:active {
+    background: #e5e7eb !important;
+  }
+
+  /* Light mode focus states */
+  :root:not(.dark) .focus\:bg-gray-100:focus,
+  :root:not(.dark) .focus\:bg-white\/10:focus {
+    background: #f3f4f6 !important;
+  }
+
+  /* Light mode shadow improvements */
+  :root:not(.dark) .shadow-sm {
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06) !important;
+  }
+
+  :root:not(.dark) .shadow-md {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.04) !important;
+  }
+
+  :root:not(.dark) .shadow-lg {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04) !important;
+  }
+
+  :root:not(.dark) .shadow-xl {
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 10px 10px -5px rgba(0, 0, 0, 0.03) !important;
+  }
+
+  :root:not(.dark) .shadow-2xl {
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.12) !important;
+  }
+
+  :root:not(.dark) .bg-\[\#0c0d14\],
+  :root:not(.dark) .bg-\[\#0f1017\] {
+    background: #ffffff !important;
+  }
+
+  /* Light mode gradient backgrounds */
+  :root:not(.dark) .bg-gradient-to-br {
+    background: linear-gradient(to bottom right, #ffffff, #ffffff) !important;
+  }
+
+  /* Light mode input backgrounds */
+  :root:not(.dark) .bg-white\/5 input,
+  :root:not(.dark) .bg-white\/10 input {
+    background: #f3f4f6 !important;
+    color: #1f2937 !important;
+  }
+
+  /* Light mode placeholder text */
+  :root:not(.dark) .placeholder\:text-white\/40::placeholder,
+  :root:not(.dark) .placeholder\:text-white\/35::placeholder,
+  :root:not(.dark) .placeholder-gray-400::placeholder {
+    color: #9ca3af !important;
+  }
+
+  /* Light mode rose/red colors - keep them visible */
+  :root:not(.dark) .text-rose-400,
+  :root:not(.dark) .text-rose-300,
+  :root:not(.dark) .text-red-400,
+  :root:not(.dark) .text-red-500 {
+    color: #e11d48 !important;
+  }
+
+  /* Light mode border colors */
+  :root:not(.dark) .border-gray-800,
+  :root:not(.dark) .border-gray-900 {
+    border-color: #e5e7eb !important;
+  }
+
+  /* Light mode ring colors */
+  :root:not(.dark) .ring-white\/10,
+  :root:not(.dark) .ring-white\/20 {
+    --tw-ring-color: rgba(0, 0, 0, 0.1) !important;
+  }
+
+  /* Light mode divide colors */
+  :root:not(.dark) .divide-white\/10,
+  :root:not(.dark) .divide-white\/20 {
+    border-color: rgba(0, 0, 0, 0.08) !important;
+  }
+
+  /* Light mode scrollbar */
+  :root:not(.dark) ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  :root:not(.dark) ::-webkit-scrollbar-track {
+    background: #f3f4f6;
+  }
+
+  :root:not(.dark) ::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+    border-radius: 4px;
+  }
+
+  :root:not(.dark) ::-webkit-scrollbar-thumb:hover {
+    background: #9ca3af;
+  }
+
+  :where(p, span, li, h1, h2, h3, h4, h5, h6, a, button, label, td, th) {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  pre,
+  code {
+    overflow-x: auto;
+    white-space: pre;
+  }
+}
+
+@layer utilities {
+  /* Catalog menu animations */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-fade-in {
+    animation: fade-in 1s ease-out forwards;
+    opacity: 0;
+  }
+
+  @keyframes fade-in-up {
+    0% {
+      opacity: 0;
+      transform: translateY(24px) scale(0.98);
+    }
+    60% {
+      opacity: 1;
+      transform: translateY(-4px) scale(1.01);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  @keyframes float-soft {
+    0%,
+    100% {
+      transform: translate3d(0, 0, 0);
+    }
+    33% {
+      transform: translate3d(6px, -8px, 0);
+    }
+    66% {
+      transform: translate3d(-6px, 4px, 0);
+    }
+  }
+
+  @keyframes glow-pulse {
+    0%,
+    100% {
+      opacity: 0.45;
+    }
+    50% {
+      opacity: 0.9;
+    }
+  }
+
+  .animate-fade-in-up {
+    animation: fade-in-up 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    opacity: 0;
+  }
+
+  .animate-float-soft {
+    animation: float-soft 9s ease-in-out infinite;
+  }
+
+  .animate-glow-pulse {
+    animation: glow-pulse 4.5s ease-in-out infinite;
+  }
+
+  .surface-card {
+    @apply border border-white/5 bg-white/5 backdrop-blur-xl shadow-[0_18px_60px_-35px_rgba(15,23,42,0.65)];
+  }
+}
+
+/* Hide scrollbar for categories bar */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Select and option styling for both themes */
+select {
+  color-scheme: light dark;
+}
+
+select option {
+  background-color: white;
+  color: #1f2937;
+  padding: 8px 12px;
+}
+
+.dark select option {
+  background-color: #1f2937;
+  color: white;
+}
+
+/* Ensure select dropdown has proper colors */
+select:focus {
+  outline: none;
+}
+
+/* Light mode select */
+:root:not(.dark) select {
+  background-color: white;
+  color: #1f2937;
+}
+
+/* Dark mode select */
+.dark select {
+  background-color: #1f2937;
+  color: white;
+}
