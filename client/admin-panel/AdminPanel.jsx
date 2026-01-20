@@ -385,11 +385,7 @@ const AdminPanel = () => {
   }, [professionals, selectedSpecialtyFilter, professionalSearchQuery, currentUser]);
 
   const stats = useMemo(() => {
-    // Sotilgan va qaytarilgan mahsulotlarni hisoblash
-    const soldOrders = orders.filter(o => o.status === 'delivered').length;
-    const returnedOrders = orders.filter(o => o.status === 'returned').length;
-
-    // Xodim uchun: mahsulotlar, ustalar va buyurtmalar
+    // Xodim uchun: mahsulotlar va ustalar
     if (currentUser?.role === 'xodim') {
       const xodimProfessionals = professionals.filter((pro) => {
         const proCreatedBy = typeof pro.createdBy === 'object' ? pro.createdBy?._id || pro.createdBy?.id : pro.createdBy;
@@ -398,8 +394,6 @@ const AdminPanel = () => {
       return [
         { title: "Jami mahsulotlar", value: (totalProducts || 0).toString() },
         { title: "Faol ustalar", value: (xodimProfessionals?.length || 0).toString() },
-        { title: "Sotilgan", value: soldOrders.toString(), color: "text-green-600 dark:text-green-400" },
-        { title: "Qaytarilgan", value: returnedOrders.toString(), color: "text-red-600 dark:text-red-400" },
       ];
     }
 
@@ -407,11 +401,9 @@ const AdminPanel = () => {
     return [
       { title: "Jami mahsulotlar", value: (totalProducts || 0).toString() },
       { title: "Faol ustalar", value: (professionals?.length || 0).toString() },
-      { title: "Sotilgan", value: soldOrders.toString(), color: "text-green-600 dark:text-green-400" },
-      { title: "Qaytarilgan", value: returnedOrders.toString(), color: "text-red-600 dark:text-red-400" },
       { title: "Jami foydalanuvchilar", value: (users?.length || 0).toString() }
     ];
-  }, [totalProducts, professionals, orders, users, currentUser]);
+  }, [totalProducts, professionals, users, currentUser]);
 
   // Menu items - barcha rollar uchun
   const menuItems = useMemo(() => {
