@@ -2207,84 +2207,79 @@ const AdminPanel = () => {
         return (
           <>
             {/* Statistics Cards */}
-            <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4 mb-4 sm:mb-6">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3 mb-6 sm:mb-8">
               {stats.map((stat, index) => (
-                <Card key={index} className="rounded-xl sm:rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 shadow-sm dark:shadow-inner dark:shadow-black/20">
-                  <CardContent className="p-3 sm:p-4 md:p-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">{stat.title}</p>
-                        <p className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 dark:text-white">{stat.value}</p>
-                      </div>
+                <Card 
+                  key={index} 
+                  className="rounded-2xl border border-gray-200 dark:border-white/10 bg-gradient-to-br from-white to-gray-50 dark:from-white/5 dark:to-white/[0.02] shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+                >
+                  <CardContent className="p-4 sm:p-6">
+                    <div className="flex flex-col space-y-2">
+                      <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wide">
+                        {stat.title}
+                      </p>
+                      <p className={`text-2xl sm:text-3xl lg:text-4xl font-bold ${stat.color || 'text-gray-900 dark:text-white'}`}>
+                        {stat.value}
+                      </p>
                     </div>
                   </CardContent>
                 </Card>
               ))}
             </div>
 
-            <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-[1.2fr,0.8fr]">
-              <Card className="rounded-xl sm:rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5">
-                <CardHeader className="p-4 sm:p-6">
-                  <CardTitle className="text-gray-900 dark:text-white text-base sm:text-lg">Tezkor amallar</CardTitle>
-                  <CardDescription className="text-gray-600 dark:text-white/60">
-                    Eng ko'p ishlatiladigan funksiyalarni bir joydan boshqaring.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="grid gap-2 sm:gap-3 grid-cols-1 sm:grid-cols-2 p-4 pt-0 sm:p-6 sm:pt-0">
+            {/* Tezkor amallar - Full width */}
+            <Card className="rounded-2xl border border-gray-200 dark:border-white/10 bg-gradient-to-br from-white via-gray-50 to-white dark:from-white/5 dark:via-white/[0.02] dark:to-white/5 shadow-lg">
+              <CardHeader className="p-6 pb-4 border-b border-gray-100 dark:border-white/5">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-rose-500 to-orange-500 flex items-center justify-center">
+                    <LayoutDashboard className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-gray-900 dark:text-white text-lg sm:text-xl font-bold">
+                      Tezkor amallar
+                    </CardTitle>
+                    <CardDescription className="text-gray-600 dark:text-white/60 text-sm">
+                      Eng ko'p ishlatiladigan funksiyalar
+                    </CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="p-6">
+                <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
                   <Button
                     type="button"
-                    className="h-10 sm:h-11 justify-start rounded-lg sm:rounded-xl border border-gray-200 dark:border-white/20 bg-gray-50 dark:bg-white/10 text-xs sm:text-sm font-semibold text-gray-900 dark:text-white transition hover:border-gray-300 dark:hover:border-white/35 hover:bg-gray-100 dark:hover:bg-white/20"
-                    onClick={handleOpenCreateStore}
-                  >
-                    <Store className="mr-2 h-4 w-4" />
-                    Yangi magazin qo'shish
-                  </Button>
-                  <Button
-                    type="button"
-                    className="h-10 sm:h-11 justify-start rounded-lg sm:rounded-xl border border-gray-200 dark:border-white/20 bg-gray-50 dark:bg-white/10 text-xs sm:text-sm font-semibold text-gray-900 dark:text-white transition hover:border-gray-300 dark:hover:border-white/35 hover:bg-gray-100 dark:hover:bg-white/20"
+                    className="h-16 sm:h-20 flex flex-col items-start justify-center gap-1 p-4 rounded-xl border-2 border-emerald-200 dark:border-emerald-500/30 bg-gradient-to-br from-emerald-50 to-emerald-100/50 dark:from-emerald-500/10 dark:to-emerald-500/5 text-emerald-700 dark:text-emerald-400 transition-all hover:border-emerald-300 dark:hover:border-emerald-500/50 hover:shadow-xl hover:shadow-emerald-500/20 hover:-translate-y-1"
                     onClick={handleOpenProfessionalDialog}
                   >
-                    <Users className="mr-2 h-4 w-4" />
-                    Usta qo'shish
+                    <Users className="h-6 w-6 mb-1" />
+                    <span className="text-sm sm:text-base font-bold">Usta qo'shish</span>
+                    <span className="text-xs text-emerald-600/70 dark:text-emerald-400/70">Yangi usta ro'yxatga olish</span>
                   </Button>
+                  
                   {currentUser?.role !== 'xodim' && (
                     <Button
                       type="button"
-                      className="h-10 sm:h-11 justify-start rounded-lg sm:rounded-xl border border-gray-200 dark:border-white/20 bg-gray-50 dark:bg-white/10 text-xs sm:text-sm font-semibold text-gray-900 dark:text-white transition hover:border-gray-300 dark:hover:border-white/35 hover:bg-gray-100 dark:hover:bg-white/20"
+                      className="h-16 sm:h-20 flex flex-col items-start justify-center gap-1 p-4 rounded-xl border-2 border-blue-200 dark:border-blue-500/30 bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-500/10 dark:to-blue-500/5 text-blue-700 dark:text-blue-400 transition-all hover:border-blue-300 dark:hover:border-blue-500/50 hover:shadow-xl hover:shadow-blue-500/20 hover:-translate-y-1"
                       onClick={() => navigate("/admin/users")}
                     >
-                      <Badge className="mr-2 h-4 w-4" />
-                      Foydalanuvchilar
+                      <Users className="h-6 w-6 mb-1" />
+                      <span className="text-sm sm:text-base font-bold">Foydalanuvchilar</span>
+                      <span className="text-xs text-blue-600/70 dark:text-blue-400/70">Barcha foydalanuvchilar</span>
                     </Button>
                   )}
-                </CardContent>
-              </Card>
-
-              <Card className="rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5">
-                <CardHeader>
-                  <CardTitle className="text-gray-900 dark:text-white text-base sm:text-lg">
-                    Oxirgi faollik
-                  </CardTitle>
-                  <CardDescription className="text-gray-600 dark:text-white/60">
-                    So'nggi yangilangan ma'lumotlar, buyurtmalar va foydalanuvchilar.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-3 sm:space-y-4 text-xs sm:text-sm text-gray-700 dark:text-white/70 p-4 pt-0 sm:p-6 sm:pt-0">
-                  <div className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-3">
-                    <p className="font-semibold text-gray-900 dark:text-white">Yangi buyurtma</p>
-                    <p className="text-gray-600 dark:text-white/60">Buyurtma #AV-204 5 daqiqa oldin kelib tushdi.</p>
-                  </div>
-                  <div className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-3">
-                    <p className="font-semibold text-gray-900 dark:text-white">Magazin yangilandi</p>
-                    <p className="text-gray-600 dark:text-white/60">"AvtoFix Sergeli" uchun yangi mahsulot qo'shildi.</p>
-                  </div>
-                  <div className="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-3">
-                    <p className="font-semibold text-gray-900 dark:text-white">Yangi foydalanuvchi</p>
-                    <p className="text-gray-600 dark:text-white/60">Dilshod Q. tizimda ro'yxatdan o'tdi.</p>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+                  
+                  <Button
+                    type="button"
+                    className="h-16 sm:h-20 flex flex-col items-start justify-center gap-1 p-4 rounded-xl border-2 border-purple-200 dark:border-purple-500/30 bg-gradient-to-br from-purple-50 to-purple-100/50 dark:from-purple-500/10 dark:to-purple-500/5 text-purple-700 dark:text-purple-400 transition-all hover:border-purple-300 dark:hover:border-purple-500/50 hover:shadow-xl hover:shadow-purple-500/20 hover:-translate-y-1"
+                    onClick={() => navigate("/admin/orders")}
+                  >
+                    <ListOrdered className="h-6 w-6 mb-1" />
+                    <span className="text-sm sm:text-base font-bold">Buyurtmalar</span>
+                    <span className="text-xs text-purple-600/70 dark:text-purple-400/70">Barcha buyurtmalar</span>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
           </>
         );
       case "orders":
