@@ -33,37 +33,18 @@ const SearchResults = () => {
             setError(null);
 
             try {
-                // 1. Serverdan ma'lumotlarni olish
-                // Transliteratsiya mantiqini qo'shish (agar kerak bo'lsa)
-                // Hozirda server faqat berilgan so'zni qidiradi.
-                // Biz 2 ta so'rov yuborishimiz mumkin: asl so'z va uning transliteratsiyasi
-                // Lekin hozircha server side qidiruvni o'zidan foydalanamiz.
-
-                const products = await productsAPI.getAll({
-                    storeId: null, // Barcha magazinlar
-                    limit: 100, // Ko'proq natija olish uchun
-                    // Serverda backend search ishlatish o'rniga, getAll qilib clientda filter qilish
-                    // bu aniqroq logic beradi (searchProductsAndVariants funksiyasi orqali)
-                    // LEKIN, bu katta baza uchun sekin bo'lishi mumkin.
-                    // Hozirgi talab bo'yicha "searchProductsAndVariants" funksiyasini ishlatish kerak.
-                    // Shuning uchun biz serverdan qidiruv so'ziga mos keluvchi mahsulotlarni so'raymiz
-                });
-
-                // Agar backendda search endpointi mukammal bo'lmasa, biz "getAll" qilib clientda filter qilamiz.
-                // Yoki search endpointidan kelgan ma'lumotlarni clientda qayta ishlaymiz.
-
-                // Eslatma: productsAPI.search hali to'liq variantlar ichini qidirmasligi mumkin (server update qilingan bo'lsa ham)
-                // Shuning uchun biz iloji boricha ko'proq mahsulotni olib, client logicni ishlatamiz.
-                // Ammo "getAll" juda ko'p ma'lumot qaytarishi mumkin.
-                // Keling, API search endpointini ishlatamiz, chunki serverni update qildik.
-
-                const searchRes = await productsAPI.search({ q: query, limit: 50 });
+                console.log('🔍 Searching for:', query);
+                
+                // Backend'dan qidiruv natijalarini olish
+                const searchRes = await productsAPI.search({ q: query, limit: 100 });
                 let searchData = Array.isArray(searchRes) ? searchRes : (searchRes.products || []);
 
-                // 2. Client side logikani ishlatish (variantlarni ajratish uchun)
-                // searchProductsAndVariants bizga kerakli formatda (Product yoki Variant) qaytaradi
+                console.log('📦 Search results from API:', searchData.length);
+
+                // Client side logikani ishlatish (variantlarni ajratish uchun)
                 const formattedResults = searchProductsAndVariants(searchData, query);
 
+                console.log('✅ Formatted results:', formattedResults.length);
                 setResults(formattedResults);
             } catch (err) {
                 console.error("Search error:", err);

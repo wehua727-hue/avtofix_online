@@ -1286,10 +1286,22 @@ const AdminPanel = () => {
         const products = await productsAPI.getAll({ storeId: id, includeInactive: true, adminPanel: true });
 
         console.log('📦 Products received from API:', products.length);
-        console.log('✅ Backend tomonidan tartiblangan mahsulotlar (birinchi 10):');
-        products.slice(0, 10).forEach((p, i) => {
-          console.log(`${i + 1}. ${p.name} - Code: ${p.code}, SKU: ${p.sku}`);
-        });
+        
+        // Variantlarni tekshirish
+        const productsWithVariants = products.filter(p => 
+          (Array.isArray(p.variants) && p.variants.length > 0) || 
+          (Array.isArray(p.variantSummaries) && p.variantSummaries.length > 0)
+        );
+        console.log('🔍 Products with variants:', productsWithVariants.length);
+        
+        if (productsWithVariants.length > 0) {
+          console.log('📋 First product with variants:', {
+            name: productsWithVariants[0].name,
+            variants: productsWithVariants[0].variants?.length || 0,
+            variantSummaries: productsWithVariants[0].variantSummaries?.length || 0,
+            firstVariant: productsWithVariants[0].variants?.[0] || productsWithVariants[0].variantSummaries?.[0]
+          });
+        }
 
         // Backendda allaqachon tartiblangan mahsulotlarni to'g'ridan-to'g'ri o'rnatish
         setStoreProducts(products);
@@ -3094,25 +3106,39 @@ const AdminPanel = () => {
                           .filter((product) => {
                             if (!storeProductSearch.trim()) return true;
                             const search = storeProductSearch.toLowerCase().trim();
+                            
+                            // Parent product fields
                             const name = (product.name || '').toLowerCase();
                             const category = (product.category || '').toLowerCase();
                             const sku = (product.sku || '').toLowerCase();
                             const code = (product.code || '').toLowerCase();
                             const catalogNumber = (product.catalogNumber || '').toLowerCase();
+                            const description = (product.description || '').toLowerCase();
 
                             // Check parent product fields
-                            if (name.includes(search) || category.includes(search) || sku.includes(search) || code.includes(search) || catalogNumber.includes(search)) {
+                            if (name.includes(search) || 
+                                category.includes(search) || 
+                                sku.includes(search) || 
+                                code.includes(search) || 
+                                catalogNumber.includes(search) ||
+                                description.includes(search)) {
                               return true;
                             }
 
-                            // Check variants
-                            if (Array.isArray(product.variants)) {
-                              return product.variants.some(variant => {
+                            // Check variants (both variants and variantSummaries)
+                            const variants = product.variants || product.variantSummaries || [];
+                            if (Array.isArray(variants) && variants.length > 0) {
+                              return variants.some(variant => {
                                 const vName = (variant.name || '').toLowerCase();
                                 const vSku = (variant.sku || '').toLowerCase();
                                 const vCode = (variant.code || '').toLowerCase();
                                 const vCatalogNumber = (variant.catalogNumber || '').toLowerCase();
-                                return vName.includes(search) || vSku.includes(search) || vCode.includes(search) || vCatalogNumber.includes(search);
+                                const vDescription = (variant.description || '').toLowerCase();
+                                return vName.includes(search) || 
+                                       vSku.includes(search) || 
+                                       vCode.includes(search) || 
+                                       vCatalogNumber.includes(search) ||
+                                       vDescription.includes(search);
                               });
                             }
 

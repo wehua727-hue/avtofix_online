@@ -18,13 +18,6 @@ const LocationConfirmModal = ({ isOpen, onClose, onConfirm, userLocation, onUpda
   // Update state when userLocation changes or modal opens
   useEffect(() => {
     if (isOpen) {
-      console.log('🔍 LocationConfirmModal opened:', { 
-        userLocation, 
-        userRegion,
-        hasAddress: userLocation?.address,
-        hasRegion: !!userRegion 
-      });
-      
       // Agar region bor bo'lsa, edit mode'ga o'tmaslik (darhol tasdiqlash)
       const hasAddressOrRegion = (userLocation?.address && userLocation.address.trim() !== '') || userRegion;
       // Faqat region ham address ham bo'lmasa edit mode
@@ -32,11 +25,6 @@ const LocationConfirmModal = ({ isOpen, onClose, onConfirm, userLocation, onUpda
       setEditedAddress(userLocation?.address || '');
       setEditedCity(userLocation?.city || '');
       setEditedPhone(userLocation?.phone || '');
-      
-      console.log('✅ Modal state:', { 
-        hasAddressOrRegion, 
-        isEditing: !hasAddressOrRegion 
-      });
     }
   }, [isOpen, userLocation, userRegion]);
 

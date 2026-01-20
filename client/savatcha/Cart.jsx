@@ -92,15 +92,6 @@ const Cart = () => {
       return;
     }
     
-    console.log('🛒 Order button clicked. User data:', {
-      id: user?.id,
-      name: user?.name,
-      region: user?.region,
-      address: user?.address,
-      city: user?.city,
-      phone: user?.phone
-    });
-    
     setShowLocationModal(true);
   };
 
