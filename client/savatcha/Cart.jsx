@@ -91,6 +91,16 @@ const Cart = () => {
       navigate('/login');
       return;
     }
+    
+    console.log('🛒 Order button clicked. User data:', {
+      id: user?.id,
+      name: user?.name,
+      region: user?.region,
+      address: user?.address,
+      city: user?.city,
+      phone: user?.phone
+    });
+    
     setShowLocationModal(true);
   };
 
@@ -446,6 +456,7 @@ const Cart = () => {
           city: user?.city || user?.region || '',
           phone: user?.phone
         }}
+        userRegion={user?.region}
       />
     </div>
   );

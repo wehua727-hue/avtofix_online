@@ -7,9 +7,9 @@ import { MapPin, X, Edit } from "lucide-react";
 /**
  * Modal for confirming delivery location before placing order
  */
-const LocationConfirmModal = ({ isOpen, onClose, onConfirm, userLocation, onUpdateAddress }) => {
+const LocationConfirmModal = ({ isOpen, onClose, onConfirm, userLocation, onUpdateAddress, userRegion }) => {
   const [isConfirming, setIsConfirming] = useState(false);
-  const [isEditing, setIsEditing] = useState(!userLocation?.address);
+  const [isEditing, setIsEditing] = useState(!userLocation?.address && !userRegion);
   const [editedAddress, setEditedAddress] = useState(userLocation?.address || '');
   const [editedCity, setEditedCity] = useState(userLocation?.city || '');
   const [editedPhone, setEditedPhone] = useState(userLocation?.phone || '');
@@ -18,13 +18,27 @@ const LocationConfirmModal = ({ isOpen, onClose, onConfirm, userLocation, onUpda
   // Update state when userLocation changes or modal opens
   useEffect(() => {
     if (isOpen) {
-      const hasAddress = userLocation?.address && userLocation.address.trim() !== '';
-      setIsEditing(!hasAddress);
+      console.log('🔍 LocationConfirmModal opened:', { 
+        userLocation, 
+        userRegion,
+        hasAddress: userLocation?.address,
+        hasRegion: !!userRegion 
+      });
+      
+      // Agar region bor bo'lsa, edit mode'ga o'tmaslik (darhol tasdiqlash)
+      const hasAddressOrRegion = (userLocation?.address && userLocation.address.trim() !== '') || userRegion;
+      // Faqat region ham address ham bo'lmasa edit mode
+      setIsEditing(!hasAddressOrRegion);
       setEditedAddress(userLocation?.address || '');
       setEditedCity(userLocation?.city || '');
       setEditedPhone(userLocation?.phone || '');
+      
+      console.log('✅ Modal state:', { 
+        hasAddressOrRegion, 
+        isEditing: !hasAddressOrRegion 
+      });
     }
-  }, [isOpen, userLocation]);
+  }, [isOpen, userLocation, userRegion]);
 
   if (!isOpen) return null;
 
@@ -32,8 +46,8 @@ const LocationConfirmModal = ({ isOpen, onClose, onConfirm, userLocation, onUpda
     setIsConfirming(true);
     try {
       await onConfirm({
-        address: (userLocation?.address || '').trim(),
-        city: (userLocation?.city || '').trim(),
+        address: (userLocation?.address || userRegion || '').trim(),
+        city: (userLocation?.city || userRegion || '').trim(),
         phone: (userLocation?.phone || '').trim(),
       });
     } finally {
@@ -49,14 +63,15 @@ const LocationConfirmModal = ({ isOpen, onClose, onConfirm, userLocation, onUpda
   };
 
   const handleSave = async () => {
-    if (!editedAddress.trim()) {
+    // Agar region bor bo'lsa, manzil majburiy emas
+    if (!editedAddress.trim() && !userRegion) {
       return;
     }
     
     setIsSaving(true);
     try {
       const updatedLocation = {
-        address: editedAddress.trim(),
+        address: editedAddress.trim() || userRegion || '',
         city: editedCity.trim(),
         phone: editedPhone.trim()
       };
@@ -73,9 +88,15 @@ const LocationConfirmModal = ({ isOpen, onClose, onConfirm, userLocation, onUpda
     }
   };
 
-  const address = isEditing ? editedAddress : userLocation?.address || 'Manzil ko\'rsatilmagan';
+  const address = isEditing ? editedAddress : userLocation?.address || userRegion || 'Manzil ko\'rsatilmagan';
   const city = isEditing ? editedCity : userLocation?.city || '';
   const phone = isEditing ? editedPhone : userLocation?.phone || 'Telefon ko\'rsatilmagan';
+
+  // Agar region bor bo'lsa, manzil yoki region yetarli
+  const hasValidLocation = userLocation?.address || userRegion;
+  
+  // Display text for address - show region if no specific address
+  const displayAddress = userLocation?.address || userRegion || 'Manzil ko\'rsatilmagan';
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -120,8 +141,13 @@ const LocationConfirmModal = ({ isOpen, onClose, onConfirm, userLocation, onUpda
                     <MapPin className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" />
                     <div>
                       <p className="text-white font-medium">
-                        {address}
+                        {displayAddress}
                       </p>
+                      {userRegion && !userLocation?.address && (
+                        <p className="text-sm text-gray-400 mt-1">
+                          Viloyat: {userRegion}
+                        </p>
+                      )}
                       {city && (
                         <p className="text-sm text-gray-400 mt-1">
                           {city}
@@ -146,25 +172,30 @@ const LocationConfirmModal = ({ isOpen, onClose, onConfirm, userLocation, onUpda
                 <div className="space-y-4">
                   <div>
                     <Label htmlFor="address" className="text-sm text-gray-300">
-                      Manzil *
+                      Manzil {!userRegion && '*'}
                     </Label>
                     <Input
                       id="address"
                       value={editedAddress}
                       onChange={(e) => setEditedAddress(e.target.value)}
-                      placeholder="Manzilni kiriting"
+                      placeholder={userRegion ? `Aniq manzil (ixtiyoriy)` : "Manzilni kiriting"}
                       className="mt-1 bg-gray-800 border-gray-600 text-white"
                     />
+                    {userRegion && (
+                      <p className="text-xs text-gray-400 mt-1">
+                        Viloyat: {userRegion} (manzil kiritmasangiz ham buyurtma shu viloyatdan boradi)
+                      </p>
+                    )}
                   </div>
                   <div>
                     <Label htmlFor="city" className="text-sm text-gray-300">
-                      Shahar
+                      Shahar {!userRegion && '(ixtiyoriy)'}
                     </Label>
                     <Input
                       id="city"
                       value={editedCity}
                       onChange={(e) => setEditedCity(e.target.value)}
-                      placeholder="Shahar nomi"
+                      placeholder={userRegion ? "Ixtiyoriy" : "Shahar nomi"}
                       className="mt-1 bg-gray-800 border-gray-600 text-white"
                     />
                   </div>
@@ -184,7 +215,7 @@ const LocationConfirmModal = ({ isOpen, onClose, onConfirm, userLocation, onUpda
               )}
             </div>
 
-            {!userLocation?.address && !isEditing && (
+            {!hasValidLocation && !isEditing && (
               <p className="text-sm text-yellow-400 mt-3 flex items-center gap-2">
                 <MapPin className="w-4 h-4" />
                 Iltimos, yetkazib berish manzilini kiriting
@@ -205,7 +236,7 @@ const LocationConfirmModal = ({ isOpen, onClose, onConfirm, userLocation, onUpda
                 </Button>
                 <Button
                   onClick={handleConfirm}
-                  disabled={isConfirming || !userLocation?.address}
+                  disabled={isConfirming || !hasValidLocation}
                   className="flex-1 h-11 bg-red-600 hover:bg-red-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isConfirming ? 'Buyurtma berilmoqda...' : 'Ha'}
@@ -222,7 +253,7 @@ const LocationConfirmModal = ({ isOpen, onClose, onConfirm, userLocation, onUpda
                 </Button>
                 <Button
                   onClick={handleSave}
-                  disabled={isSaving || !editedAddress.trim()}
+                  disabled={isSaving || (!editedAddress.trim() && !userRegion)}
                   className="flex-1 h-11 bg-red-600 hover:bg-red-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isSaving ? 'Saqlanmoqda...' : 'Saqlash'}

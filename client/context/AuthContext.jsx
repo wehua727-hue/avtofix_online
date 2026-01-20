@@ -17,6 +17,8 @@ const buildSafeUser = (user) => {
     name: user.name,
     phone: user.phone,
     address: user.address,
+    region: user.region,
+    city: user.city,
     role: user.role ?? "user",
     managerOfShop: user.managerOfShop,
     helperPermissions: user.helperPermissions,
