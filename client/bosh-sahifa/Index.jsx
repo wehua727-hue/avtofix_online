@@ -575,10 +575,10 @@ const Index = () => {
                     <span className="text-sm font-medium text-white">Yangi kolleksiya</span>
                   </div>
                   <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4 leading-tight">
-                    АвтоФих.уз - Маркетплейс автозапчастей
+                    Avtomobil ehtiyot qismlari marketi
                   </h1>
                   <p className="text-white/80 text-base sm:text-lg mb-6">
-                    <strong>АвтоФих</strong> (AvtoFix) - современный <strong>автофикс</strong> маркетплейс в Узбекистане. Оригинальные запчасти и профессиональные мастера 24/7
+                    Sifatli mahsulotlar va professional xizmatlar bir joyda. 24/7 xizmat ko'rsatamiz
                   </p>
                   <div className="flex flex-wrap justify-center lg:justify-start gap-3">
                     <Link
@@ -904,7 +904,7 @@ const Index = () => {
                 </div>
               </Link>
               <p className="text-xs leading-relaxed text-gray-600 dark:text-gray-400">
-                <strong>АвтоФих.уз</strong> (AvtoFix) - маркетплейс автозапчастей и автосервисов в Узбекистане. <strong>Автофикс</strong> объединяет проверенных продавцов оригинальных запчастей и профессиональных мастеров по ремонту автомобилей.
+                AvtoFix - Avtomobil ehtiyot qismlari va professional xizmatlar uchun yagona platforma. Sifatli mahsulotlar va ishonchli ustalar bir joyda.
               </p>
               
               {/* Social links */}
