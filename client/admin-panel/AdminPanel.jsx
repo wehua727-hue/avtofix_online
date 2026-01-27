@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/select";
 import { authAPI, productsAPI, storesAPI, professionalsAPI, uploadsAPI, ordersAPI, carBrandsAPI, specialtiesAPI } from "@/services/api";
 import CategoryPicker from "@/components/CategoryPicker";
+import LoadingSpinner from "@/components/LoadingSpinner";
 import OrdersSection from "./OrdersSection";
 import {
   Dialog,
@@ -37,6 +38,7 @@ import {
 } from "@/components/ui/command";
 import {
   ArrowLeft,
+  Award,
   ChevronsUpDown,
   Crosshair,
   Edit,
@@ -45,15 +47,23 @@ import {
   LayoutDashboard,
   ListOrdered,
   Loader2,
+  MapPin,
   Menu,
   Package,
   Phone,
   Pencil,
   Plus,
+  Search,
   Store,
   Trash2,
   Users,
+  Wrench,
   X,
+  AlertCircle,
+  ImageIcon,
+  Tag,
+  DollarSign,
+  Layers,
 } from "lucide-react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -245,6 +255,10 @@ const AdminPanel = () => {
   const [specialties, setSpecialties] = useState([]); // Barcha mutaxassisliklar
   const [newSpecialtyInput, setNewSpecialtyInput] = useState(""); // Yangi mutaxassislik input
   const [selectedSpecialtyFilter, setSelectedSpecialtyFilter] = useState("all"); // Mutaxassislik filteri
+  const [editingSpecialtyId, setEditingSpecialtyId] = useState(null); // Tahrirlash rejimidagi mutaxassislik ID
+  const [editingSpecialtyName, setEditingSpecialtyName] = useState(""); // Tahrirlash rejimidagi mutaxassislik nomi
+  const [deleteSpecialtyModalOpen, setDeleteSpecialtyModalOpen] = useState(false); // O'chirish modal oynasi
+  const [specialtyToDelete, setSpecialtyToDelete] = useState(null); // O'chiriladigan mutaxassislik
   const [exchangeRates, setExchangeRates] = useState({ USD: 0, RUB: 0, CNY: 0 }); // Valyuta kurslari
   const [storeAssignDialogOpen, setStoreAssignDialogOpen] = useState(false);
   const [assigningStoreUserId, setAssigningStoreUserId] = useState(null);
@@ -596,6 +610,117 @@ const AdminPanel = () => {
       toast.success(`"${name}" mutaxassisligi qo'shildi`);
     } catch (error) {
       toast.error(error.message || "Mutaxassislik qo'shishda xatolik");
+    }
+  };
+
+  // Mutaxassislikni tahrirlash rejimiga o'tkazish
+  const startEditingSpecialty = (specialty) => {
+    setEditingSpecialtyId(specialty._id);
+    setEditingSpecialtyName(specialty.name);
+  };
+
+  // Mutaxassislikni tahrirlashni bekor qilish
+  const cancelEditingSpecialty = () => {
+    setEditingSpecialtyId(null);
+    setEditingSpecialtyName("");
+  };
+
+  // Mutaxassislikni saqlash
+  const saveEditingSpecialty = async () => {
+    if (!editingSpecialtyId || !editingSpecialtyName.trim()) return;
+    
+    const oldSpecialty = specialties.find(s => s._id === editingSpecialtyId);
+    if (!oldSpecialty) return;
+
+    await handleEditSpecialty(editingSpecialtyId, oldSpecialty.name, editingSpecialtyName);
+    setEditingSpecialtyId(null);
+    setEditingSpecialtyName("");
+  };
+
+  // Mutaxassislikni tahrirlash
+  const handleEditSpecialty = async (specialtyId, oldName, newName) => {
+    const trimmedName = newName.trim();
+    if (!trimmedName || trimmedName === oldName) return;
+
+    try {
+      const updatedSpecialty = await specialtiesAPI.update(specialtyId, trimmedName);
+      setSpecialties((prev) => 
+        prev.map(s => s._id === specialtyId ? updatedSpecialty : s)
+           .sort((a, b) => a.name.localeCompare(b.name))
+      );
+      
+      // Professional formdagi mutaxassislikni ham yangilash
+      setProfessionalForm((prev) => ({
+        ...prev,
+        specialties: (prev.specialties || []).map(s => s === oldName ? trimmedName : s),
+      }));
+      
+      toast.success(`"${oldName}" mutaxassisligi "${trimmedName}" ga o'zgartirildi`);
+    } catch (error) {
+      toast.error(error.message || "Mutaxassislikni tahrirlashda xatolik");
+    }
+  };
+
+  // Mutaxassislikni o'chirish modal oynasini ochish
+  const openDeleteSpecialtyModal = (specialty) => {
+    setSpecialtyToDelete(specialty);
+    setDeleteSpecialtyModalOpen(true);
+  };
+
+  // Mutaxassislikni o'chirish modal oynasini yopish
+  const closeDeleteSpecialtyModal = () => {
+    setSpecialtyToDelete(null);
+    setDeleteSpecialtyModalOpen(false);
+  };
+
+  // Mutaxassislikni o'chirishni tasdiqlash
+  const confirmDeleteSpecialty = async () => {
+    if (!specialtyToDelete) return;
+
+    try {
+      await specialtiesAPI.delete(specialtyToDelete._id);
+      setSpecialties((prev) => prev.filter(s => s._id !== specialtyToDelete._id));
+      
+      // Professional formdagi mutaxassislikni ham olib tashlash
+      setProfessionalForm((prev) => ({
+        ...prev,
+        specialties: (prev.specialties || []).filter(s => s !== specialtyToDelete.name),
+      }));
+      
+      // Agar filter shu mutaxassislik bo'lsa, "all" ga o'zgartirish
+      if (selectedSpecialtyFilter === specialtyToDelete.name) {
+        setSelectedSpecialtyFilter("all");
+      }
+      
+      toast.success(`"${specialtyToDelete.name}" mutaxassisligi o'chirildi`);
+      closeDeleteSpecialtyModal();
+    } catch (error) {
+      toast.error(error.message || "Mutaxassislikni o'chirishda xatolik");
+    }
+  };
+
+  // Mutaxassislikni o'chirish (eski funksiya - endi ishlatilmaydi)
+  const handleDeleteSpecialty = async (specialtyId, specialtyName) => {
+    if (!confirm(`"${specialtyName}" mutaxassisligini o'chirishni xohlaysizmi?`)) return;
+
+    try {
+      await specialtiesAPI.delete(specialtyId);
+      setSpecialties((prev) => prev.filter(s => s._id !== specialtyId));
+      
+      // Professional formdagi mutaxassislikni ham olib tashlash
+      setProfessionalForm((prev) => ({
+        ...prev,
+        specialties: (prev.specialties || []).filter(s => s !== specialtyName),
+      }));
+      
+      // Agar filter shu mutaxassislik bo'lsa, "all" ga o'zgartirish
+      if (selectedSpecialtyFilter === specialtyName) {
+        setSelectedSpecialtyFilter("all");
+      }
+      
+      toast.success(`"${specialtyName}" mutaxassisligi o'chirildi`);
+    } catch (error) {
+      toast.error(error.message || "Mutaxassislikni o'chirishda xatolik");
     }
   };
 
@@ -2205,82 +2330,135 @@ const AdminPanel = () => {
     switch (activeSection) {
       case "dashboard":
         return (
-          <>
-            {/* Statistics Cards */}
-            <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3 mb-6 sm:mb-8">
-              {stats.map((stat, index) => (
-                <Card 
-                  key={index} 
-                  className="rounded-2xl border border-gray-200 dark:border-white/10 bg-gradient-to-br from-white to-gray-50 dark:from-white/5 dark:to-white/[0.02] shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
-                >
-                  <CardContent className="p-4 sm:p-6">
-                    <div className="flex flex-col space-y-2">
-                      <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wide">
-                        {stat.title}
-                      </p>
-                      <p className={`text-2xl sm:text-3xl lg:text-4xl font-bold ${stat.color || 'text-gray-900 dark:text-white'}`}>
-                        {stat.value}
-                      </p>
+          <div className="space-y-8">
+            {/* Enhanced Statistics Cards */}
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {stats.map((stat, index) => {
+                const gradients = [
+                  'from-rose-500 to-pink-600',
+                  'from-blue-500 to-cyan-600', 
+                  'from-emerald-500 to-teal-600',
+                  'from-purple-500 to-indigo-600',
+                  'from-orange-500 to-red-600'
+                ];
+                const bgGradients = [
+                  'from-rose-50 to-pink-50 dark:from-rose-500/10 dark:to-pink-500/10',
+                  'from-blue-50 to-cyan-50 dark:from-blue-500/10 dark:to-cyan-500/10',
+                  'from-emerald-50 to-teal-50 dark:from-emerald-500/10 dark:to-teal-500/10',
+                  'from-purple-50 to-indigo-50 dark:from-purple-500/10 dark:to-indigo-500/10',
+                  'from-orange-50 to-red-50 dark:from-orange-500/10 dark:to-red-500/10'
+                ];
+                const icons = [Package, Users, ListOrdered, Store, LayoutDashboard];
+                const Icon = icons[index % icons.length];
+                
+                return (
+                  <div 
+                    key={index} 
+                    className={`group relative overflow-hidden rounded-3xl bg-gradient-to-br ${bgGradients[index % bgGradients.length]} border border-white/20 dark:border-white/10 shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 cursor-pointer`}
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-br from-white/50 to-transparent dark:from-white/5 dark:to-transparent" />
+                    <div className="relative p-6">
+                      <div className="flex items-center justify-between mb-4">
+                        <div className={`h-12 w-12 rounded-2xl bg-gradient-to-br ${gradients[index % gradients.length]} flex items-center justify-center shadow-lg`}>
+                          <Icon className="h-6 w-6 text-white" />
+                        </div>
+                        <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+                      </div>
+                      <div className="space-y-2">
+                        <p className="text-sm font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
+                          {stat.title}
+                        </p>
+                        <p className="text-3xl font-bold text-gray-900 dark:text-white">
+                          {stat.value}
+                        </p>
+                      </div>
                     </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-white/30 to-transparent" />
+                  </div>
+                );
+              })}
             </div>
 
-            {/* Tezkor amallar - Full width */}
-            <Card className="rounded-2xl border border-gray-200 dark:border-white/10 bg-gradient-to-br from-white via-gray-50 to-white dark:from-white/5 dark:via-white/[0.02] dark:to-white/5 shadow-lg">
-              <CardHeader className="p-6 pb-4 border-b border-gray-100 dark:border-white/5">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-rose-500 to-orange-500 flex items-center justify-center">
-                    <LayoutDashboard className="w-5 h-5 text-white" />
+            {/* Enhanced Quick Actions */}
+            <div className="rounded-3xl border border-gray-200/60 dark:border-white/10 bg-white/80 dark:bg-black/40 backdrop-blur-2xl shadow-2xl">
+              <div className="p-8">
+                <div className="flex items-center gap-4 mb-8">
+                  <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-rose-500 to-orange-500 flex items-center justify-center shadow-lg">
+                    <LayoutDashboard className="w-6 h-6 text-white" />
                   </div>
                   <div>
-                    <CardTitle className="text-gray-900 dark:text-white text-lg sm:text-xl font-bold">
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
                       Tezkor amallar
-                    </CardTitle>
-                    <CardDescription className="text-gray-600 dark:text-white/60 text-sm">
+                    </h2>
+                    <p className="text-gray-600 dark:text-gray-400">
                       Eng ko'p ishlatiladigan funksiyalar
-                    </CardDescription>
+                    </p>
                   </div>
                 </div>
-              </CardHeader>
-              <CardContent className="p-6">
-                <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-                  <Button
+                
+                <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+                  <button
                     type="button"
-                    className="h-16 sm:h-20 flex flex-col items-start justify-center gap-1 p-4 rounded-xl border-2 border-emerald-200 dark:border-emerald-500/30 bg-gradient-to-br from-emerald-50 to-emerald-100/50 dark:from-emerald-500/10 dark:to-emerald-500/5 text-emerald-700 dark:text-emerald-400 transition-all hover:border-emerald-300 dark:hover:border-emerald-500/50 hover:shadow-xl hover:shadow-emerald-500/20 hover:-translate-y-1"
+                    className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-500/10 dark:to-teal-500/10 border-2 border-emerald-200/60 dark:border-emerald-500/30 p-6 text-left transition-all duration-300 hover:border-emerald-400/60 hover:shadow-xl hover:shadow-emerald-500/20 hover:-translate-y-1"
                     onClick={handleOpenProfessionalDialog}
                   >
-                    <Users className="h-6 w-6 mb-1" />
-                    <span className="text-sm sm:text-base font-bold">Usta qo'shish</span>
-                    <span className="text-xs text-emerald-600/70 dark:text-emerald-400/70">Yangi usta ro'yxatga olish</span>
-                  </Button>
+                    <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-teal-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <div className="relative">
+                      <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform">
+                        <Users className="h-6 w-6 text-white" />
+                      </div>
+                      <h3 className="text-lg font-bold text-emerald-700 dark:text-emerald-400 mb-2">
+                        Usta qo'shish
+                      </h3>
+                      <p className="text-sm text-emerald-600/80 dark:text-emerald-400/80">
+                        Yangi usta ro'yxatga olish
+                      </p>
+                    </div>
+                  </button>
                   
                   {currentUser?.role !== 'xodim' && (
-                    <Button
+                    <button
                       type="button"
-                      className="h-16 sm:h-20 flex flex-col items-start justify-center gap-1 p-4 rounded-xl border-2 border-blue-200 dark:border-blue-500/30 bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-500/10 dark:to-blue-500/5 text-blue-700 dark:text-blue-400 transition-all hover:border-blue-300 dark:hover:border-blue-500/50 hover:shadow-xl hover:shadow-blue-500/20 hover:-translate-y-1"
+                      className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-500/10 dark:to-cyan-500/10 border-2 border-blue-200/60 dark:border-blue-500/30 p-6 text-left transition-all duration-300 hover:border-blue-400/60 hover:shadow-xl hover:shadow-blue-500/20 hover:-translate-y-1"
                       onClick={() => navigate("/admin/users")}
                     >
-                      <Users className="h-6 w-6 mb-1" />
-                      <span className="text-sm sm:text-base font-bold">Foydalanuvchilar</span>
-                      <span className="text-xs text-blue-600/70 dark:text-blue-400/70">Barcha foydalanuvchilar</span>
-                    </Button>
+                      <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-cyan-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      <div className="relative">
+                        <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform">
+                          <Users className="h-6 w-6 text-white" />
+                        </div>
+                        <h3 className="text-lg font-bold text-blue-700 dark:text-blue-400 mb-2">
+                          Foydalanuvchilar
+                        </h3>
+                        <p className="text-sm text-blue-600/80 dark:text-blue-400/80">
+                          Barcha foydalanuvchilar
+                        </p>
+                      </div>
+                    </button>
                   )}
                   
-                  <Button
+                  <button
                     type="button"
-                    className="h-16 sm:h-20 flex flex-col items-start justify-center gap-1 p-4 rounded-xl border-2 border-purple-200 dark:border-purple-500/30 bg-gradient-to-br from-purple-50 to-purple-100/50 dark:from-purple-500/10 dark:to-purple-500/5 text-purple-700 dark:text-purple-400 transition-all hover:border-purple-300 dark:hover:border-purple-500/50 hover:shadow-xl hover:shadow-purple-500/20 hover:-translate-y-1"
+                    className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-500/10 dark:to-indigo-500/10 border-2 border-purple-200/60 dark:border-purple-500/30 p-6 text-left transition-all duration-300 hover:border-purple-400/60 hover:shadow-xl hover:shadow-purple-500/20 hover:-translate-y-1"
                     onClick={() => navigate("/admin/orders")}
                   >
-                    <ListOrdered className="h-6 w-6 mb-1" />
-                    <span className="text-sm sm:text-base font-bold">Buyurtmalar</span>
-                    <span className="text-xs text-purple-600/70 dark:text-purple-400/70">Barcha buyurtmalar</span>
-                  </Button>
+                    <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-indigo-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <div className="relative">
+                      <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform">
+                        <ListOrdered className="h-6 w-6 text-white" />
+                      </div>
+                      <h3 className="text-lg font-bold text-purple-700 dark:text-purple-400 mb-2">
+                        Buyurtmalar
+                      </h3>
+                      <p className="text-sm text-purple-600/80 dark:text-purple-400/80">
+                        Barcha buyurtmalar
+                      </p>
+                    </div>
+                  </button>
                 </div>
-              </CardContent>
-            </Card>
-          </>
+              </div>
+            </div>
+          </div>
         );
       case "orders":
         return <OrdersSection />;
@@ -2422,173 +2600,375 @@ const AdminPanel = () => {
         );
       case "professionals":
         return (
-          <div className="space-y-4">
-            {/* Qidirish */}
-            <div className="relative">
-              <input
-                type="text"
-                value={professionalSearchQuery}
-                onChange={(e) => setProfessionalSearchQuery(e.target.value)}
-                placeholder="Ism, telefon, manzil yoki mutaxassislik bo'yicha qidirish..."
-                className="w-full px-4 py-3 pl-10 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all"
-              />
-              <svg className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-              {professionalSearchQuery && (
-                <button
-                  onClick={() => setProfessionalSearchQuery("")}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/10"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              )}
+          <div className="space-y-6">
+            {/* Enhanced Search Section */}
+            <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-3xl border border-gray-200/50 dark:border-gray-700/50 shadow-xl p-6">
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <Search className="h-5 w-5 text-gray-400" />
+                </div>
+                <input
+                  type="text"
+                  value={professionalSearchQuery}
+                  onChange={(e) => setProfessionalSearchQuery(e.target.value)}
+                  placeholder="Ism, telefon, manzil yoki mutaxassislik bo'yicha qidirish..."
+                  className="w-full pl-12 pr-12 py-4 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all text-base"
+                />
+                {professionalSearchQuery && (
+                  <button
+                    onClick={() => setProfessionalSearchQuery("")}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-xl text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
             </div>
 
-            {/* Mutaxassislik bo'yicha filter */}
-            <div className="flex flex-wrap gap-2 p-3 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5">
-              <button
-                type="button"
-                onClick={() => setSelectedSpecialtyFilter("all")}
-                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${selectedSpecialtyFilter === "all"
-                  ? "bg-emerald-500 text-white"
-                  : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
-                  }`}
-              >
-                Barchasi ({professionals.length})
-              </button>
-              {specialties.map((spec) => {
-                const count = professionals.filter((pro) => {
-                  const proSpecialties = pro.specialties || [];
-                  const proSpecialty = pro.specialty || "";
-                  return (
-                    proSpecialties.some((s) => s.toLowerCase() === spec.name.toLowerCase()) ||
-                    proSpecialty.toLowerCase().includes(spec.name.toLowerCase())
-                  );
-                }).length;
-                return (
+            {/* Enhanced Specialty Filter - Mobile First Design */}
+            <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-3xl border border-gray-200/50 dark:border-gray-700/50 shadow-xl overflow-hidden">
+              <div className="p-4 sm:p-6 border-b border-gray-200/50 dark:border-gray-700/50">
+                <h3 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white mb-2">Mutaxassislik bo'yicha filter</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Kerakli mutaxassislikni tanlang</p>
+              </div>
+              
+              {/* Mobile Horizontal Scroll */}
+              <div className="block lg:hidden p-4">
+                <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
                   <button
-                    key={spec._id}
                     type="button"
-                    onClick={() => setSelectedSpecialtyFilter(spec.name)}
-                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${selectedSpecialtyFilter === spec.name
-                      ? "bg-emerald-500 text-white"
-                      : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+                    onClick={() => setSelectedSpecialtyFilter("all")}
+                    className={`flex-shrink-0 px-6 py-3 rounded-2xl text-sm font-semibold transition-all duration-300 ${selectedSpecialtyFilter === "all"
+                      ? "bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg shadow-emerald-500/30 scale-105"
+                      : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 hover:scale-105"
                       }`}
                   >
-                    {spec.name} ({count})
+                    <div className="flex flex-col items-center gap-1">
+                      <div className="w-8 h-8 rounded-full bg-current opacity-20 flex items-center justify-center">
+                        <Users className="w-4 h-4" />
+                      </div>
+                      <span>Barchasi</span>
+                    </div>
                   </button>
-                );
-              })}
+                  {specialties.map((spec) => {
+                    const count = professionals.filter((pro) => {
+                      const proSpecialties = pro.specialties || [];
+                      const proSpecialty = pro.specialty || "";
+                      return (
+                        proSpecialties.some((s) => s.toLowerCase() === spec.name.toLowerCase()) ||
+                        proSpecialty.toLowerCase().includes(spec.name.toLowerCase())
+                      );
+                    }).length;
+                    
+                    // Icon mapping for specialties
+                    const getSpecialtyIcon = (name) => {
+                      const iconMap = {
+                        'motor': Wrench,
+                        'elektr': Package,
+                        'kuzov': Store,
+                        'tormoz': Award,
+                        'default': Users
+                      };
+                      const key = Object.keys(iconMap).find(k => name.toLowerCase().includes(k));
+                      return iconMap[key] || iconMap.default;
+                    };
+                    
+                    const IconComponent = getSpecialtyIcon(spec.name);
+                    
+                    return (
+                      <button
+                        key={spec._id}
+                        type="button"
+                        onClick={() => setSelectedSpecialtyFilter(spec.name)}
+                        className={`flex-shrink-0 px-6 py-3 rounded-2xl text-sm font-semibold transition-all duration-300 ${selectedSpecialtyFilter === spec.name
+                          ? "bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg shadow-emerald-500/30 scale-105"
+                          : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 hover:scale-105"
+                          }`}
+                      >
+                        <div className="flex flex-col items-center gap-1">
+                          <div className="w-8 h-8 rounded-full bg-current opacity-20 flex items-center justify-center">
+                            <IconComponent className="w-4 h-4" />
+                          </div>
+                          <span className="whitespace-nowrap">{spec.name}</span>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+              
+              {/* Desktop Grid */}
+              <div className="hidden lg:block p-6">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedSpecialtyFilter("all")}
+                    className={`p-4 rounded-2xl text-sm font-semibold transition-all duration-300 ${selectedSpecialtyFilter === "all"
+                      ? "bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg shadow-emerald-500/30 scale-105"
+                      : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 hover:scale-105"
+                      }`}
+                  >
+                    <div className="flex flex-col items-center gap-2">
+                      <div className="w-10 h-10 rounded-full bg-current opacity-20 flex items-center justify-center">
+                        <Users className="w-5 h-5" />
+                      </div>
+                      <span>Barchasi</span>
+                    </div>
+                  </button>
+                  {specialties.map((spec) => {
+                    const count = professionals.filter((pro) => {
+                      const proSpecialties = pro.specialties || [];
+                      const proSpecialty = pro.specialty || "";
+                      return (
+                        proSpecialties.some((s) => s.toLowerCase() === spec.name.toLowerCase()) ||
+                        proSpecialty.toLowerCase().includes(spec.name.toLowerCase())
+                      );
+                    }).length;
+                    
+                    // Icon mapping for specialties
+                    const getSpecialtyIcon = (name) => {
+                      const iconMap = {
+                        'motor': Wrench,
+                        'elektr': Package,
+                        'kuzov': Store,
+                        'tormoz': Award,
+                        'default': Users
+                      };
+                      const key = Object.keys(iconMap).find(k => name.toLowerCase().includes(k));
+                      return iconMap[key] || iconMap.default;
+                    };
+                    
+                    const IconComponent = getSpecialtyIcon(spec.name);
+                    
+                    return (
+                      <button
+                        key={spec._id}
+                        type="button"
+                        onClick={() => setSelectedSpecialtyFilter(spec.name)}
+                        className={`p-4 rounded-2xl text-sm font-semibold transition-all duration-300 ${selectedSpecialtyFilter === spec.name
+                          ? "bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg shadow-emerald-500/30 scale-105"
+                          : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 hover:scale-105"
+                          }`}
+                      >
+                        <div className="flex flex-col items-center gap-2">
+                          <div className="w-10 h-10 rounded-full bg-current opacity-20 flex items-center justify-center">
+                            <IconComponent className="w-5 h-5" />
+                          </div>
+                          <span className="text-center">{spec.name}</span>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
 
-            <Card className="rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5">
-              <CardHeader>
-                <CardTitle className="text-gray-900 dark:text-white">
+            {/* Enhanced Professionals List */}
+            <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-3xl border border-gray-200/50 dark:border-gray-700/50 shadow-xl overflow-hidden">
+              <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white">
                   {selectedSpecialtyFilter === "all" ? "Barcha ustalar" : `${selectedSpecialtyFilter} ustalari`}
-                </CardTitle>
-                <CardDescription className="text-gray-600 dark:text-gray-400">
+                </h2>
+                <p className="text-gray-600 dark:text-gray-400 mt-1">
                   {selectedSpecialtyFilter === "all"
                     ? "Tizimda ro'yxatdan o'tgan barcha ustalar ro'yxati"
                     : `${selectedSpecialtyFilter} mutaxassisligi bo'yicha filterlangan ustalar`
                   }
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
+                </p>
+              </div>
+              
+              <div className="p-6">
                 {professionalsLoading ? (
-                  <p className="text-gray-600 dark:text-white/60">Ustalar yuklanmoqda...</p>
-                ) : filteredProfessionalsBySpecialty.length === 0 ? (
-                  <p className="text-gray-600 dark:text-white/60 text-center py-8">
-                    Hozircha birorta usta mavjud emas.
-                  </p>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
-                      <thead>
-                        <tr className="border-b border-gray-200 dark:border-white/10">
-                          <th className="text-left py-3 px-2 text-gray-600 dark:text-gray-400 font-medium">Rasm</th>
-                          <th className="text-left py-3 px-2 text-gray-600 dark:text-gray-400 font-medium">Ism</th>
-                          <th className="text-left py-3 px-2 text-gray-600 dark:text-gray-400 font-medium">Telefon</th>
-                          <th className="text-left py-3 px-2 text-gray-600 dark:text-gray-400 font-medium">Mutaxassislik</th>
-                          <th className="text-left py-3 px-2 text-gray-600 dark:text-gray-400 font-medium">Manzil</th>
-                          <th className="text-left py-3 px-2 text-gray-600 dark:text-gray-400 font-medium">Tajriba</th>
-                          <th className="text-left py-3 px-2 text-gray-600 dark:text-gray-400 font-medium">Amallar</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {filteredProfessionalsBySpecialty.map((pro) => (
-                          <tr key={pro._id} className="border-b border-gray-100 dark:border-white/5 hover:bg-gray-50 dark:hover:bg-white/5">
-                            <td className="py-3 px-2">
-                              <img
-                                src={pro.image || pro.images?.[0] || "/placeholder.jpg"}
-                                alt={pro.name}
-                                className="w-10 h-10 rounded-lg object-cover"
-                              />
-                            </td>
-                            <td className="py-3 px-2 text-gray-900 dark:text-white font-medium">{pro.name}</td>
-                            <td className="py-3 px-2 text-gray-700 dark:text-gray-300">{pro.phone}</td>
-                            <td className="py-3 px-2 text-gray-700 dark:text-gray-300">
-                              {(pro.specialties && pro.specialties.length > 0)
-                                ? pro.specialties.join(", ")
-                                : (pro.specialty || pro.category)}
-                            </td>
-                            <td className="py-3 px-2 text-gray-700 dark:text-gray-300 max-w-[200px]">
-                              <div className="truncate" title={pro.address}>
-                                {pro.address || "-"}
-                              </div>
-                              {pro.latitude && pro.longitude && (
-                                <a
-                                  href={`https://www.google.com/maps?q=${pro.latitude},${pro.longitude}`}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
-                                >
-                                  Xaritada ko'rish
-                                </a>
-                              )}
-                            </td>
-                            <td className="py-3 px-2 text-gray-700 dark:text-gray-300">{pro.experience || "5+ yil"}</td>
-                            <td className="py-3 px-2">
-                              <div className="flex items-center gap-1">
-                                <Button
-                                  type="button"
-                                  variant="outline"
-                                  size="icon"
-                                  className="h-8 w-8 rounded-lg"
-                                  onClick={() => handleEditProfessional(pro)}
-                                  disabled={currentUser?.role === "admin" && pro.createdBy !== currentUser.id}
-                                  title="Tahrirlash"
-                                >
-                                  <Pencil className="h-3.5 w-3.5" />
-                                </Button>
-                                <Button
-                                  type="button"
-                                  variant="outline"
-                                  size="icon"
-                                  className="h-8 w-8 rounded-lg text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-600/20"
-                                  disabled={
-                                    professionalDeletingId === pro._id ||
-                                    (currentUser?.role === "admin" && pro.createdBy !== currentUser.id)
-                                  }
-                                  onClick={() => handleDeleteProfessional(pro._id)}
-                                  title="O'chirish"
-                                >
-                                  {professionalDeletingId === pro._id ? (
-                                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                                  ) : (
-                                    <Trash2 className="h-3.5 w-3.5" />
-                                  )}
-                                </Button>
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                  <div className="flex items-center justify-center py-12">
+                    <div className="relative">
+                      <div className="w-12 h-12 rounded-full border-4 border-emerald-500/20 border-t-emerald-500 animate-spin" />
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <Wrench className="w-5 h-5 text-emerald-500 animate-pulse" />
+                      </div>
+                    </div>
                   </div>
+                ) : filteredProfessionalsBySpecialty.length === 0 ? (
+                  <div className="text-center py-12">
+                    <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                      <Users className="w-8 h-8 text-gray-400" />
+                    </div>
+                    <p className="text-gray-600 dark:text-gray-400 font-medium">
+                      Hozircha birorta usta mavjud emas.
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    {/* Mobile Cards View */}
+                    <div className="block lg:hidden space-y-4">
+                      {filteredProfessionalsBySpecialty.map((pro) => (
+                        <div key={pro._id} className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-4 shadow-sm hover:shadow-md transition-shadow">
+                          <div className="flex items-start gap-4">
+                            <img
+                              src={pro.image || pro.images?.[0] || "/placeholder.jpg"}
+                              alt={pro.name}
+                              className="w-16 h-16 rounded-xl object-cover flex-shrink-0"
+                            />
+                            <div className="flex-1 min-w-0">
+                              <h3 className="font-semibold text-gray-900 dark:text-white text-lg mb-1">
+                                {pro.name}
+                              </h3>
+                              <p className="text-emerald-600 dark:text-emerald-400 text-sm font-medium mb-2">
+                                {(pro.specialties && pro.specialties.length > 0)
+                                  ? pro.specialties.join(", ")
+                                  : (pro.specialty || pro.category)}
+                              </p>
+                              <div className="space-y-1 text-sm text-gray-600 dark:text-gray-400">
+                                <div className="flex items-center gap-2">
+                                  <Phone className="w-4 h-4" />
+                                  <span>{pro.phone}</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <Award className="w-4 h-4" />
+                                  <span>{pro.experience || "5+ yil"}</span>
+                                </div>
+                                {pro.address && (
+                                  <div className="flex items-start gap-2">
+                                    <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                                    <span className="line-clamp-2">{pro.address}</span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              className="flex-1 rounded-xl"
+                              onClick={() => handleEditProfessional(pro)}
+                              disabled={currentUser?.role === "admin" && pro.createdBy !== currentUser.id}
+                            >
+                              <Pencil className="h-4 w-4 mr-2" />
+                              Tahrirlash
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              className="rounded-xl text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-600/20"
+                              disabled={
+                                professionalDeletingId === pro._id ||
+                                (currentUser?.role === "admin" && pro.createdBy !== currentUser.id)
+                              }
+                              onClick={() => handleDeleteProfessional(pro._id)}
+                            >
+                              {professionalDeletingId === pro._id ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <Trash2 className="h-4 w-4" />
+                              )}
+                            </Button>
+                            {pro.latitude && pro.longitude && (
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                className="rounded-xl"
+                                onClick={() => window.open(`https://www.google.com/maps?q=${pro.latitude},${pro.longitude}`, '_blank')}
+                              >
+                                <MapPin className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Desktop Table View */}
+                    <div className="hidden lg:block overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="border-b border-gray-200 dark:border-gray-700">
+                            <th className="text-left py-4 px-3 text-gray-600 dark:text-gray-400 font-semibold">Rasm</th>
+                            <th className="text-left py-4 px-3 text-gray-600 dark:text-gray-400 font-semibold">Ism</th>
+                            <th className="text-left py-4 px-3 text-gray-600 dark:text-gray-400 font-semibold">Telefon</th>
+                            <th className="text-left py-4 px-3 text-gray-600 dark:text-gray-400 font-semibold">Mutaxassislik</th>
+                            <th className="text-left py-4 px-3 text-gray-600 dark:text-gray-400 font-semibold">Manzil</th>
+                            <th className="text-left py-4 px-3 text-gray-600 dark:text-gray-400 font-semibold">Tajriba</th>
+                            <th className="text-left py-4 px-3 text-gray-600 dark:text-gray-400 font-semibold">Amallar</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {filteredProfessionalsBySpecialty.map((pro) => (
+                            <tr key={pro._id} className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                              <td className="py-4 px-3">
+                                <img
+                                  src={pro.image || pro.images?.[0] || "/placeholder.jpg"}
+                                  alt={pro.name}
+                                  className="w-12 h-12 rounded-xl object-cover"
+                                />
+                              </td>
+                              <td className="py-4 px-3 text-gray-900 dark:text-white font-semibold">{pro.name}</td>
+                              <td className="py-4 px-3 text-gray-700 dark:text-gray-300">{pro.phone}</td>
+                              <td className="py-4 px-3 text-gray-700 dark:text-gray-300">
+                                {(pro.specialties && pro.specialties.length > 0)
+                                  ? pro.specialties.join(", ")
+                                  : (pro.specialty || pro.category)}
+                              </td>
+                              <td className="py-4 px-3 text-gray-700 dark:text-gray-300 max-w-[200px]">
+                                <div className="truncate" title={pro.address}>
+                                  {pro.address || "-"}
+                                </div>
+                                {pro.latitude && pro.longitude && (
+                                  <a
+                                    href={`https://www.google.com/maps?q=${pro.latitude},${pro.longitude}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
+                                  >
+                                    Xaritada ko'rish
+                                  </a>
+                                )}
+                              </td>
+                              <td className="py-4 px-3 text-gray-700 dark:text-gray-300">{pro.experience || "5+ yil"}</td>
+                              <td className="py-4 px-3">
+                                <div className="flex items-center gap-2">
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="icon"
+                                    className="h-9 w-9 rounded-xl"
+                                    onClick={() => handleEditProfessional(pro)}
+                                    disabled={currentUser?.role === "admin" && pro.createdBy !== currentUser.id}
+                                    title="Tahrirlash"
+                                  >
+                                    <Pencil className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="icon"
+                                    className="h-9 w-9 rounded-xl text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-600/20"
+                                    disabled={
+                                      professionalDeletingId === pro._id ||
+                                      (currentUser?.role === "admin" && pro.createdBy !== currentUser.id)
+                                    }
+                                    onClick={() => handleDeleteProfessional(pro._id)}
+                                    title="O'chirish"
+                                  >
+                                    {professionalDeletingId === pro._id ? (
+                                      <Loader2 className="h-4 w-4 animate-spin" />
+                                    ) : (
+                                      <Trash2 className="h-4 w-4" />
+                                    )}
+                                  </Button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </div>
         );
       case "users":
@@ -2902,17 +3282,108 @@ const AdminPanel = () => {
           : stores;
 
         return (
-          <div className="space-y-6">
-            {storesLoading ? (
-              <p className="text-sm text-gray-500">Magazinlar yuklanmoqda...</p>
-            ) : storesToShow.length === 0 ? (
-              <p className="text-sm text-gray-500">
-                {currentUser?.role === "xodim"
-                  ? "Sizga magazin biriktirilmagan. Iltimos, administrator bilan bog'laning."
-                  : "Hozircha magazinlar qo'shilmagan."}
+          <div className="space-y-8">
+            {/* Enhanced Header */}
+            <div className="text-center">
+              <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-cyan-600 bg-clip-text text-transparent mb-4">
+                Magazinlar
+              </h1>
+              <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+                Barcha magazinlarni boshqaring va ularning mahsulotlarini ko'ring
               </p>
+            </div>
+
+            {/* Statistics */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-500/10 dark:to-indigo-500/10 rounded-3xl p-6 border border-blue-200/50 dark:border-blue-500/30">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-r from-blue-500 to-indigo-500 flex items-center justify-center shadow-lg">
+                    <Store className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{storesToShow.length}</p>
+                    <p className="text-sm text-blue-600/80 dark:text-blue-400/80">Jami magazin</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-500/10 dark:to-teal-500/10 rounded-3xl p-6 border border-emerald-200/50 dark:border-emerald-500/30">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 flex items-center justify-center shadow-lg">
+                    <Eye className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+                      {storesToShow.filter(s => s.isVisible !== false).length}
+                    </p>
+                    <p className="text-sm text-emerald-600/80 dark:text-emerald-400/80">Faol magazin</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-500/10 dark:to-pink-500/10 rounded-3xl p-6 border border-purple-200/50 dark:border-purple-500/30">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center shadow-lg">
+                    <Package className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">{totalProducts}</p>
+                    <p className="text-sm text-purple-600/80 dark:text-purple-400/80">Jami mahsulot</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-500/10 dark:to-red-500/10 rounded-3xl p-6 border border-orange-200/50 dark:border-orange-500/30">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-r from-orange-500 to-red-500 flex items-center justify-center shadow-lg">
+                    <Users className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">
+                      {storesToShow.filter(s => s.manager).length}
+                    </p>
+                    <p className="text-sm text-orange-600/80 dark:text-orange-400/80">Boshqaruvchi</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Stores Grid */}
+            {storesLoading ? (
+              <div className="flex items-center justify-center py-20">
+                <div className="text-center">
+                  <div className="relative mb-6">
+                    <div className="w-16 h-16 rounded-full border-4 border-blue-500/20 border-t-blue-500 animate-spin" />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <Store className="w-6 h-6 text-blue-500 animate-pulse" />
+                    </div>
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                    Magazinlar yuklanmoqda...
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-400">
+                    Iltimos, biroz kuting
+                  </p>
+                </div>
+              </div>
+            ) : storesToShow.length === 0 ? (
+              <div className="text-center py-20">
+                <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                  <Store className="w-10 h-10 text-gray-400" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                  {currentUser?.role === "xodim"
+                    ? "Sizga magazin biriktirilmagan"
+                    : "Hozircha magazinlar qo'shilmagan"}
+                </h3>
+                <p className="text-gray-600 dark:text-gray-400 max-w-md mx-auto">
+                  {currentUser?.role === "xodim"
+                    ? "Iltimos, administrator bilan bog'laning va magazin biriktirishni so'rang."
+                    : "Yangi magazin qo'shish uchun yuqoridagi tugmani bosing."}
+                </p>
+              </div>
             ) : (
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {storesToShow.map((store) => {
                   const locationLines = (store.location || "")
                     .split(/[\n,]/)
@@ -2926,68 +3397,105 @@ const AdminPanel = () => {
                   return (
                     <div
                       key={store._id}
-                      className="group relative overflow-hidden rounded-2xl border bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-black/20"
+                      className="group relative overflow-hidden rounded-3xl bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 shadow-xl hover:shadow-2xl transition-all duration-500 hover:-translate-y-2"
                     >
+                      {/* Enhanced background pattern */}
+                      <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-transparent to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-blue-500/10 to-transparent rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
-                      {/* Image section */}
-                      <div className="relative aspect-[4/3] w-full overflow-hidden bg-black/20">
-                        {store.imageUrl ? (
-                          <img
-                            src={store.imageUrl}
-                            alt={store.name}
-                            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                          />
-                        ) : (
-                          <div className="flex h-full w-full items-center justify-center">
-                            <Store className="h-12 w-12 text-white/20" />
-                          </div>
-                        )}
-                        {/* Gradient overlay */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                      {/* Enhanced Image section */}
+                      <div className="relative overflow-hidden">
+                        <div className="aspect-[4/3]">
+                          {store.imageUrl ? (
+                            <img
+                              src={store.imageUrl}
+                              alt={store.name}
+                              className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+                            />
+                          ) : (
+                            <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900">
+                              <Store className="h-16 w-16 text-gray-400 dark:text-gray-600" />
+                            </div>
+                          )}
+                          
+                          {/* Enhanced gradient overlay */}
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-500" />
+                        </div>
 
-                        {/* Visibility switch */}
-                        <div
-                          className="absolute top-2 right-2 flex items-center gap-1.5 rounded-lg bg-black/50 backdrop-blur-sm px-2 py-1"
-                          title={store.isVisible !== false ? "Mahsulotlarni tahrirlash mumkin" : "Faqat ko'rish rejimi"}
-                        >
-                          <span className="text-[10px] text-white/80">
-                            {store.isVisible !== false ? "Ko'rsin" : "Ko'rmasin"}
+                        {/* Enhanced Visibility switch */}
+                        <div className="absolute top-4 right-4 flex items-center gap-2 rounded-2xl bg-black/60 backdrop-blur-md px-3 py-2 border border-white/20">
+                          <div className={`w-2 h-2 rounded-full ${store.isVisible !== false ? 'bg-green-400' : 'bg-red-400'} animate-pulse`} />
+                          <span className="text-xs font-medium text-white">
+                            {store.isVisible !== false ? "Faol" : "Nofaol"}
                           </span>
                           <Switch
                             checked={store.isVisible !== false}
                             onCheckedChange={(checked) => handleToggleStoreVisibility(store, checked)}
                             disabled={currentUser?.role === "admin" && !isMyStore}
-                            className="h-4 w-7 data-[state=checked]:bg-green-500 data-[state=unchecked]:bg-gray-500"
+                            className="h-4 w-7 data-[state=checked]:bg-green-500 data-[state=unchecked]:bg-red-500"
                           />
+                        </div>
+
+                        {/* Store badge */}
+                        <div className="absolute top-4 left-4">
+                          <div className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-blue-500 to-purple-500 shadow-lg shadow-blue-500/30 backdrop-blur-sm">
+                            <span className="text-xs font-bold text-white flex items-center gap-1">
+                              <Store className="w-3 h-3" />
+                              Magazin
+                            </span>
+                          </div>
                         </div>
                       </div>
 
-                      {/* Content section */}
-                      <div className="p-4">
-                        <h3 className="mb-1 truncate text-base font-semibold text-gray-900 dark:text-white sm:text-lg">
-                          {store.name}
-                        </h3>
-                        <div className="mb-3 line-clamp-2 min-h-[2.5rem] text-xs text-gray-600 dark:text-white/60 sm:text-sm">
-                          {locationLines.length > 0 ? locationLines.join(", ") : store.location || "Manzil ko'rsatilmagan"}
+                      {/* Enhanced Content section */}
+                      <div className="relative p-6">
+                        {/* Store name and location */}
+                        <div className="mb-4">
+                          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2 line-clamp-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                            {store.name}
+                          </h3>
+                          <div className="flex items-start gap-2 text-sm text-gray-600 dark:text-gray-400">
+                            <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0 text-blue-500" />
+                            <span className="line-clamp-2">
+                              {locationLines.length > 0 ? locationLines.join(", ") : store.location || "Manzil ko'rsatilmagan"}
+                            </span>
+                          </div>
                         </div>
 
-                        {/* Action buttons */}
-                        <div className="flex items-center gap-2">
+                        {/* Store info */}
+                        <div className="space-y-3 mb-6">
+                          {store.manager && (
+                            <div className="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center shadow-lg shadow-green-500/25">
+                                <Users className="w-4 h-4 text-white" />
+                              </div>
+                              <div>
+                                <p className="text-sm font-medium text-gray-900 dark:text-white">Boshqaruvchi</p>
+                                <p className="text-xs text-gray-600 dark:text-gray-400">
+                                  {typeof store.manager === 'object' ? store.manager.name : 'Tayinlangan'}
+                                </p>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Enhanced Action buttons */}
+                        <div className="flex gap-3">
                           <Button
                             type="button"
                             size="sm"
                             variant="outline"
-                            className="flex-1 rounded-lg border border-gray-300 dark:border-white/15 bg-gray-100 dark:bg-white/5 px-3 py-2 text-xs font-medium text-gray-700 dark:text-white transition hover:border-gray-400 dark:hover:border-white/25 hover:bg-gray-200 dark:hover:bg-white/10 hover:text-gray-900 dark:hover:text-white/80 sm:text-sm"
+                            className="flex-1 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-500/10 dark:to-indigo-500/10 border-blue-200 dark:border-blue-500/30 text-blue-700 dark:text-blue-400 hover:from-blue-100 hover:to-indigo-100 dark:hover:from-blue-500/20 dark:hover:to-indigo-500/20 transition-all duration-300 hover:-translate-y-0.5"
                             onClick={() => handleViewStoreProducts(store)}
                           >
-                            <Eye className="mr-1.5 h-3.5 w-3.5" />
-                            Batafsil
+                            <Eye className="mr-2 h-4 w-4" />
+                            Ko'rish
                           </Button>
                           <Button
                             type="button"
                             size="sm"
                             variant="outline"
-                            className="flex h-8 w-8 items-center justify-center rounded-lg border border-amber-400/30 bg-amber-400/10 p-0 text-amber-600 dark:text-amber-300 transition hover:border-amber-400/50 hover:bg-amber-400/20 hover:text-amber-700 dark:hover:text-amber-200 disabled:opacity-40 disabled:cursor-not-allowed sm:h-9 sm:w-9"
+                            className="rounded-xl bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-500/10 dark:to-orange-500/10 border-amber-200 dark:border-amber-500/30 text-amber-700 dark:text-amber-400 hover:from-amber-100 hover:to-orange-100 dark:hover:from-amber-500/20 dark:hover:to-orange-500/20 transition-all duration-300 hover:-translate-y-0.5 disabled:opacity-40 disabled:cursor-not-allowed disabled:transform-none"
                             onClick={() => handleEditStore(store)}
                             disabled={currentUser?.role === "admin" && !isMyStore}
                             title={
@@ -2996,13 +3504,13 @@ const AdminPanel = () => {
                                 : "Tahrirlash"
                             }
                           >
-                            <Edit className="h-3.5 w-3.5" />
+                            <Edit className="h-4 w-4" />
                           </Button>
                           <Button
                             type="button"
                             size="sm"
                             variant="outline"
-                            className="flex h-8 w-8 items-center justify-center rounded-lg border border-rose-500/30 bg-rose-500/10 p-0 text-rose-600 dark:text-rose-300 transition hover:border-rose-500/50 hover:bg-rose-500/20 hover:text-rose-700 dark:hover:text-rose-200 disabled:opacity-40 disabled:cursor-not-allowed sm:h-9 sm:w-9"
+                            className="rounded-xl bg-gradient-to-r from-rose-50 to-red-50 dark:from-rose-500/10 dark:to-red-500/10 border-rose-200 dark:border-rose-500/30 text-rose-700 dark:text-rose-400 hover:from-rose-100 hover:to-red-100 dark:hover:from-rose-500/20 dark:hover:to-red-500/20 transition-all duration-300 hover:-translate-y-0.5 disabled:opacity-40 disabled:cursor-not-allowed disabled:transform-none"
                             onClick={() => handleDeleteStore(store)}
                             disabled={currentUser?.role === "admin" && !isMyStore}
                             title={
@@ -3011,13 +3519,18 @@ const AdminPanel = () => {
                                 : "O'chirish"
                             }
                           >
-                            <Trash2 className="h-3.5 w-3.5" />
+                            <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
 
-                        {/* Date */}
-                        <div className="mt-3 border-t border-gray-200 dark:border-white/10 pt-2 text-center text-[10px] text-gray-500 dark:text-white/40 sm:text-xs">
-                          Qo'shilgan: {new Date(store.createdAt).toLocaleDateString("uz-UZ")}
+                        {/* Enhanced Date */}
+                        <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 text-center">
+                          <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center gap-1">
+                            <span>Qo'shilgan:</span>
+                            <span className="font-medium">
+                              {new Date(store.createdAt).toLocaleDateString("uz-UZ")}
+                            </span>
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -3031,58 +3544,120 @@ const AdminPanel = () => {
         return (
           <div className="space-y-6">
             {storeDetailsLoading ? (
-              <p className="text-sm text-white/60">Magazin ma'lumotlari yuklanmoqda...</p>
+              <div className="flex items-center justify-center py-12">
+                <LoadingSpinner type="pulse" size="lg" />
+              </div>
             ) : storeDetailsError ? (
-              <Card className="rounded-2xl border border-rose-500/40 bg-rose-500/10">
-                <CardContent className="p-6 text-center text-white">
-                  {storeDetailsError}
-                </CardContent>
-              </Card>
+              <div className="rounded-3xl border border-rose-500/30 bg-gradient-to-br from-rose-500/10 via-rose-500/5 to-transparent backdrop-blur-xl">
+                <div className="p-8 text-center">
+                  <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-rose-500/20">
+                    <AlertCircle className="h-8 w-8 text-rose-400" />
+                  </div>
+                  <h3 className="mb-2 text-lg font-semibold text-white">Xatolik yuz berdi</h3>
+                  <p className="text-white/70">{storeDetailsError}</p>
+                </div>
+              </div>
             ) : !selectedStore ? (
-              <p className="text-sm text-white/60">Magazin topilmadi.</p>
+              <div className="rounded-3xl border border-amber-500/30 bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-transparent backdrop-blur-xl">
+                <div className="p-8 text-center">
+                  <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-amber-500/20">
+                    <Search className="h-8 w-8 text-amber-400" />
+                  </div>
+                  <h3 className="mb-2 text-lg font-semibold text-white">Magazin topilmadi</h3>
+                  <p className="text-white/70">Tanlangan magazin mavjud emas yoki o'chirilgan</p>
+                </div>
+              </div>
             ) : (
               <>
-                <Card className="rounded-2xl border border-white/10 bg-white/5">
-                  <CardHeader className="flex flex-col gap-4">
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                      <div>
-                        <CardTitle className="text-white text-lg mb-2">
-                          Mahsulotlar ro'yxati
-                        </CardTitle>
-                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-500/20 border border-blue-500/30 w-fit">
-                          <Package className="h-4 w-4 text-blue-400" />
-                          <span className="text-sm font-semibold text-blue-300">
-                            Jami: {(() => {
-                              let total = 0;
-                              let variantsCount = 0;
-                              storeProducts.forEach(p => {
-                                // Asosiy mahsulot
-                                total += 1;
-                                // Variantlar - variantSummaries yoki variants
-                                const variants = p.variantSummaries || p.variants;
-                                if (Array.isArray(variants) && variants.length > 0) {
-                                  variantsCount += variants.length;
-                                  total += variants.length;
-                                }
-                              });
-                              console.log('� Mahsnulotlar:', storeProducts.length, 'Variantlar:', variantsCount, 'Jami:', total);
-                              return total;
-                            })()} ta mahsulot (asosiy: {storeProducts.length})
-                          </span>
+                {/* Enhanced Store Header */}
+                <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-blue-600/20 via-purple-600/10 to-pink-600/20 backdrop-blur-xl">
+                  <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-pink-500/10" />
+                  <div className="relative p-8">
+                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+                      {/* Store Info */}
+                      <div className="flex items-center gap-6">
+                        <div className="relative">
+                          <div className="h-20 w-20 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 p-0.5">
+                            <div className="flex h-full w-full items-center justify-center rounded-2xl bg-white/10 backdrop-blur-sm">
+                              <Store className="h-10 w-10 text-white" />
+                            </div>
+                          </div>
+                          <div className="absolute -bottom-2 -right-2 rounded-full bg-green-500 p-1">
+                            <div className="h-3 w-3 rounded-full bg-white" />
+                          </div>
+                        </div>
+                        <div>
+                          <h1 className="text-2xl font-bold text-white mb-2">{selectedStore.name}</h1>
+                          <div className="flex flex-wrap items-center gap-4 text-sm text-white/70">
+                            <div className="flex items-center gap-2">
+                              <MapPin className="h-4 w-4" />
+                              <span>{selectedStore.address || "Manzil ko'rsatilmagan"}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Phone className="h-4 w-4" />
+                              <span>{selectedStore.phone || "Telefon ko'rsatilmagan"}</span>
+                            </div>
+                          </div>
                         </div>
                       </div>
+
+
                     </div>
-                    <Input
-                      type="text"
-                      placeholder="Qidirish (nom, kategoriya, kod)..."
-                      value={storeProductSearch}
-                      onChange={(e) => setStoreProductSearch(e.target.value)}
-                      className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-200 placeholder:text-gray-500"
-                    />
-                  </CardHeader>
-                  <CardContent className="space-y-4">
+                  </div>
+                </div>
+                {/* Enhanced Search and Filters */}
+                <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 via-white/5 to-transparent backdrop-blur-xl p-6">
+                  <div className="flex flex-col lg:flex-row gap-4">
+                    <div className="relative flex-1">
+                      <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-white/50" />
+                      <Input
+                        type="text"
+                        placeholder="Mahsulot nomi, kategoriya, kod yoki katalog raqami bo'yicha qidiring..."
+                        value={storeProductSearch}
+                        onChange={(e) => setStoreProductSearch(e.target.value)}
+                        className="pl-12 h-12 rounded-2xl border-white/20 bg-white/10 backdrop-blur-sm text-white placeholder:text-white/50 focus:border-blue-400/50 focus:ring-blue-400/20"
+                      />
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-500/20 border border-blue-500/30">
+                        <Package className="h-4 w-4 text-blue-400" />
+                        <span className="text-sm font-medium text-blue-300">
+                          {(() => {
+                            let total = 0;
+                            storeProducts.forEach(p => {
+                              total += 1;
+                              const variants = p.variantSummaries || p.variants;
+                              if (Array.isArray(variants) && variants.length > 0) {
+                                total += variants.length;
+                              }
+                            });
+                            return total;
+                          })()} ta mahsulot
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Products Grid */}
+                <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-white/5 via-white/2 to-transparent backdrop-blur-xl">
+                  <div className="p-6">
                     {storeProductsLoading ? (
-                      <p className="text-sm text-white/60">Mahsulotlar yuklanmoqda...</p>
+                      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                        {[...Array(6)].map((_, i) => (
+                          <div key={i} className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm p-6">
+                            <div className="aspect-square mb-4 rounded-xl bg-white/10 animate-pulse" />
+                            <div className="space-y-3">
+                              <div className="h-4 bg-white/10 rounded animate-pulse" />
+                              <div className="h-3 bg-white/10 rounded w-2/3 animate-pulse" />
+                              <div className="flex gap-2">
+                                <div className="h-6 w-16 bg-white/10 rounded-full animate-pulse" />
+                                <div className="h-6 w-20 bg-white/10 rounded-full animate-pulse" />
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
                     ) : sortedStoreProducts.length === 0 ? (
                       <div className="rounded-2xl border border-dashed border-white/15 bg-white/5 px-6 py-10 text-center text-sm text-white/60">
                         Hozircha mahsulotlar qo‘shilmagan.
@@ -3280,8 +3855,8 @@ const AdminPanel = () => {
                           })}
                       </div>
                     )}
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               </>
             )}
           </div>
@@ -3336,11 +3911,45 @@ const AdminPanel = () => {
         </DialogContent>
       </Dialog>
 
-      <div className="relative flex min-h-screen overflow-hidden bg-gray-50 dark:bg-[#05060d] text-gray-900 dark:text-white">
-        <div className="pointer-events-none absolute inset-0">
-          <div className="absolute -top-24 left-10 h-64 w-64 rounded-full bg-rose-600/10 dark:bg-rose-600/25 blur-3xl" />
-          <div className="absolute top-1/3 right-24 h-80 w-80 rounded-full bg-purple-500/10 dark:bg-purple-500/20 blur-3xl" />
-          <div className="absolute bottom-[-60px] left-1/4 h-72 w-72 rounded-full bg-emerald-400/10 dark:bg-emerald-400/15 blur-3xl" />
+      {/* Delete Specialty Confirmation Modal */}
+      <Dialog open={deleteSpecialtyModalOpen} onOpenChange={setDeleteSpecialtyModalOpen}>
+        <DialogContent className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-white/10 text-gray-900 dark:text-white">
+          <DialogHeader>
+            <DialogTitle>Mutaxassislikni o'chirish</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <p className="text-gray-700 dark:text-gray-300">
+              <span className="font-semibold">"{specialtyToDelete?.name}"</span> mutaxassisligini o'chirishni xohlaysizmi? 
+            </p>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+              Bu amalni ortga qaytarib bo'lmaydi va bu mutaxassislikka ega bo'lgan barcha ustalardan olib tashlanadi.
+            </p>
+          </div>
+          <div className="flex gap-3 justify-end">
+            <Button
+              variant="outline"
+              onClick={closeDeleteSpecialtyModal}
+              className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300"
+            >
+              Bekor qilish
+            </Button>
+            <Button
+              onClick={confirmDeleteSpecialty}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              O'chirish
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <div className="relative min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-[#0a0b14] dark:via-[#0f1117] dark:to-[#05060d] text-gray-900 dark:text-white">
+        {/* Enhanced animated background */}
+        <div className="pointer-events-none absolute inset-0 overflow-hidden">
+          <div className="absolute -top-32 -left-16 h-96 w-96 rounded-full bg-gradient-to-br from-rose-500/20 via-pink-500/15 to-orange-500/10 dark:from-rose-500/30 dark:via-pink-500/25 dark:to-orange-500/20 blur-3xl animate-pulse" />
+          <div className="absolute top-1/4 -right-20 h-80 w-80 rounded-full bg-gradient-to-bl from-purple-500/15 via-indigo-500/10 to-blue-500/15 dark:from-purple-500/25 dark:via-indigo-500/20 dark:to-blue-500/25 blur-3xl animate-pulse" style={{ animationDelay: '2s' }} />
+          <div className="absolute bottom-[-80px] left-1/3 h-96 w-96 rounded-full bg-gradient-to-tr from-emerald-400/15 via-teal-400/10 to-cyan-400/15 dark:from-emerald-400/25 dark:via-teal-400/20 dark:to-cyan-400/25 blur-3xl animate-pulse" style={{ animationDelay: '4s' }} />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[600px] w-[600px] rounded-full bg-gradient-to-r from-rose-500/5 via-transparent to-blue-500/5 dark:from-rose-500/10 dark:to-blue-500/10 blur-3xl animate-spin" style={{ animationDuration: '20s' }} />
         </div>
 
         {/* Mobile sidebar overlay */}
@@ -3352,109 +3961,157 @@ const AdminPanel = () => {
         )}
 
         <aside
-          className={`fixed inset-y-0 left-0 z-30 w-64 transform bg-white dark:bg-black/90 backdrop-blur-xl p-5 transition-transform duration-300 ease-in-out lg:static lg:w-64 lg:translate-x-0 lg:bg-white dark:lg:bg-black/75 border-r border-gray-200 dark:border-gray-800 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"
-            }`}
+          className={`fixed inset-y-0 left-0 z-30 w-72 transform bg-white/95 dark:bg-black/95 backdrop-blur-2xl border-r border-gray-200/50 dark:border-gray-800/50 shadow-2xl shadow-gray-900/10 dark:shadow-black/50 transition-all duration-300 ease-in-out ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0`}
         >
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Admin Panel</h2>
-            <button
-              className="rounded-lg p-2 text-gray-600 dark:text-white/50 transition hover:bg-gray-100 dark:hover:bg-white/10 hover:text-gray-900 dark:hover:text-white lg:hidden"
-              onClick={() => setSidebarOpen(false)}
-            >
-              <X className="h-5 w-5" />
-            </button>
-          </div>
+          <div className="p-6">
+            <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-2xl bg-gradient-to-br from-rose-500 via-rose-600 to-orange-500 flex items-center justify-center shadow-lg shadow-rose-500/30">
+                  <LayoutDashboard className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-bold text-gray-900 dark:text-white">Admin Panel</h2>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">AvtoFix boshqaruvi</p>
+                </div>
+              </div>
+              <button
+                className="rounded-xl p-2 text-gray-400 dark:text-white/50 transition-all hover:bg-gray-100 dark:hover:bg-white/10 hover:text-gray-600 dark:hover:text-white lg:hidden"
+                onClick={() => setSidebarOpen(false)}
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
 
-          <nav className="mt-8 space-y-2">
-            {menuItems
-              .filter((item) => {
-                // Xodim uchun faqat "users" va "categories" yashirilgan
-                if (currentUser?.role === 'xodim') {
-                  return !['users', 'categories'].includes(item.id);
-                }
-                return true;
-              })
-              .map((item) => {
-                const Icon = item.icon;
-                const isActive = activeSection === item.id;
-                const isDisabled = item.id === "masters" && !currentUser;
+            <nav className="space-y-2">
+              {menuItems
+                .filter((item) => {
+                  // Xodim uchun faqat "users" va "categories" yashirilgan
+                  if (currentUser?.role === 'xodim') {
+                    return !['users', 'categories'].includes(item.id);
+                  }
+                  return true;
+                })
+                .map((item) => {
+                  const Icon = item.icon;
+                  const isActive = activeSection === item.id;
+                  const isDisabled = item.id === "masters" && !currentUser;
 
-                return (
-                  <button
-                    key={item.id}
-                    type="button"
-                    disabled={isDisabled}
-                    onClick={() => {
-                      navigate(`/admin/${item.id}`);
-                      setSidebarOpen(false);
-                    }}
-                    className={`flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left text-sm font-semibold transition ${isActive
-                      ? "border border-rose-400/50 dark:border-rose-400/50 bg-rose-50 dark:bg-rose-500/25 text-rose-900 dark:text-white shadow-[0_12px_25px_-18px_rgba(244,63,94,0.65)]"
-                      : "border border-transparent text-gray-700 dark:text-white/70 hover:border-gray-200 dark:hover:border-white/10 hover:bg-gray-100 dark:hover:bg-white/10 hover:text-gray-900 dark:hover:text-white"
-                      } ${isDisabled ? "opacity-50" : ""}`}
-                  >
-                    <span
-                      className={`flex h-8 w-8 items-center justify-center rounded-xl border ${isActive
-                        ? "border-rose-300 dark:border-white/50 bg-rose-100 dark:bg-white/20 text-rose-700 dark:text-white"
-                        : "border-gray-200 dark:border-white/15 bg-gray-50 dark:bg-white/5 text-gray-600 dark:text-white/70"
-                        }`}
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      disabled={isDisabled}
+                      onClick={() => {
+                        navigate(`/admin/${item.id}`);
+                        setSidebarOpen(false);
+                      }}
+                      className={`group relative flex w-full items-center gap-4 rounded-2xl px-4 py-3.5 text-left text-sm font-semibold transition-all duration-200 ${isActive
+                        ? "bg-gradient-to-r from-rose-500 via-rose-600 to-orange-500 text-white shadow-lg shadow-rose-500/30 transform scale-[1.02]"
+                        : "text-gray-700 dark:text-white/70 hover:bg-gray-100/80 dark:hover:bg-white/10 hover:text-gray-900 dark:hover:text-white hover:transform hover:scale-[1.01]"
+                        } ${isDisabled ? "opacity-50 cursor-not-allowed" : ""}`}
                     >
-                      <Icon className="h-4 w-4" />
-                    </span>
-                    <span>{item.label}</span>
-                  </button>
-                );
-              })}
-          </nav>
+                      {isActive && (
+                        <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-rose-500 via-rose-600 to-orange-500 opacity-20 blur-xl" />
+                      )}
+                      <span
+                        className={`relative flex h-10 w-10 items-center justify-center rounded-xl transition-all ${isActive
+                          ? "bg-white/20 text-white shadow-lg"
+                          : "bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-white/70 group-hover:bg-gray-200 dark:group-hover:bg-white/20"
+                          }`}
+                      >
+                        <Icon className="h-5 w-5" />
+                      </span>
+                      <span className="relative">{item.label}</span>
+                      {isActive && (
+                        <div className="absolute right-4 h-2 w-2 rounded-full bg-white/60 animate-pulse" />
+                      )}
+                    </button>
+                  );
+                })}
+            </nav>
+
+            {/* User info at bottom */}
+            <div className="absolute bottom-6 left-6 right-6">
+              <div className="rounded-2xl bg-gradient-to-r from-gray-100/80 to-gray-50/80 dark:from-white/10 dark:to-white/5 p-4 border border-gray-200/50 dark:border-white/10">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-rose-500 to-orange-500 flex items-center justify-center text-white text-sm font-bold shadow-lg">
+                    {currentUser?.name?.charAt(0).toUpperCase() || "A"}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                      {currentUser?.name || "Admin"}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">
+                      {currentUser?.role || "admin"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </aside>
 
-        <main className="relative z-10 flex-1 overflow-y-auto p-4 pt-4 sm:p-6 lg:p-10">
-          {/* Admin Navbar */}
-          <div className="mb-4 sm:mb-6 flex items-center justify-between rounded-xl sm:rounded-2xl border border-gray-200 dark:border-white/10 bg-gradient-to-r from-gray-50 via-white to-gray-50 dark:from-black/60 dark:via-black/50 dark:to-black/60 backdrop-blur-xl px-3 py-3 sm:px-5 sm:py-4 shadow-sm dark:shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
+        <main className="relative z-10 flex-1 overflow-y-auto p-4 lg:p-8 lg:ml-72">
+          {/* Enhanced Admin Navbar */}
+          <div className="mb-6 flex items-center justify-between rounded-2xl border border-gray-200/60 dark:border-white/10 bg-white/80 dark:bg-black/40 backdrop-blur-2xl px-4 py-4 shadow-xl shadow-gray-900/5 dark:shadow-black/20">
             <div className="flex items-center gap-3">
-              {/* Mobile menu button */}
+              {/* Mobile menu button with enhanced styling */}
               <button
-                className="flex items-center justify-center rounded-xl border border-gray-200 dark:border-white/15 bg-gray-50 dark:bg-white/5 p-2.5 text-gray-700 dark:text-white/80 transition hover:border-rose-400/50 hover:bg-rose-50 dark:hover:bg-rose-500/10 hover:text-rose-700 dark:hover:text-white lg:hidden"
+                className="group flex items-center justify-center rounded-xl border border-gray-200/60 dark:border-white/15 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-white/5 dark:to-white/10 p-3 text-gray-700 dark:text-white/80 transition-all duration-200 hover:border-rose-400/50 hover:from-rose-50 hover:to-rose-100 dark:hover:from-rose-500/10 dark:hover:to-rose-500/20 hover:text-rose-700 dark:hover:text-white hover:shadow-lg hover:shadow-rose-500/20 lg:hidden"
                 onClick={() => setSidebarOpen((prev) => !prev)}
               >
-                <Menu className="h-5 w-5" />
+                <Menu className="h-5 w-5 transition-transform group-hover:scale-110" />
               </button>
 
               <Link
                 to="/"
-                className="group flex items-center justify-center rounded-xl border border-gray-200 dark:border-white/15 bg-gray-50 dark:bg-white/5 p-2.5 sm:px-4 sm:py-2.5 text-gray-700 dark:text-white/80 transition-all hover:border-rose-400/50 hover:bg-rose-50 dark:hover:bg-rose-500/10 hover:text-rose-700 dark:hover:text-white"
+                className="group flex items-center justify-center rounded-xl border border-gray-200/60 dark:border-white/15 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-white/5 dark:to-white/10 p-3 sm:px-4 sm:py-3 text-gray-700 dark:text-white/80 transition-all duration-200 hover:border-blue-400/50 hover:from-blue-50 hover:to-blue-100 dark:hover:from-blue-500/10 dark:hover:to-blue-500/20 hover:text-blue-700 dark:hover:text-white hover:shadow-lg hover:shadow-blue-500/20"
                 title="Bosh sahifa"
               >
-                <Home className="h-5 w-5" />
-                <span className="hidden sm:inline ml-2 text-sm font-medium">Bosh sahifa</span>
+                <Home className="h-5 w-5 transition-transform group-hover:scale-110" />
+                <span className="hidden sm:inline ml-2 text-sm font-semibold">Bosh sahifa</span>
               </Link>
 
               <button
                 type="button"
                 onClick={() => navigate(-1)}
-                className="group flex items-center justify-center rounded-xl border border-gray-200 dark:border-white/15 bg-gray-50 dark:bg-white/5 p-2.5 sm:px-4 sm:py-2.5 text-gray-700 dark:text-white/80 transition-all hover:border-blue-400/50 hover:bg-blue-50 dark:hover:bg-blue-500/10 hover:text-blue-700 dark:hover:text-white"
+                className="group flex items-center justify-center rounded-xl border border-gray-200/60 dark:border-white/15 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-white/5 dark:to-white/10 p-3 sm:px-4 sm:py-3 text-gray-700 dark:text-white/80 transition-all duration-200 hover:border-purple-400/50 hover:from-purple-50 hover:to-purple-100 dark:hover:from-purple-500/10 dark:hover:to-purple-500/20 hover:text-purple-700 dark:hover:text-white hover:shadow-lg hover:shadow-purple-500/20"
                 title="Orqaga"
               >
-                <ArrowLeft className="h-5 w-5" />
-                <span className="hidden sm:inline ml-2 text-sm font-medium">Orqaga</span>
+                <ArrowLeft className="h-5 w-5 transition-transform group-hover:scale-110" />
+                <span className="hidden sm:inline ml-2 text-sm font-semibold">Orqaga</span>
               </button>
             </div>
 
-            <div className="flex items-center gap-3">
-              <span className="text-sm text-gray-600 dark:text-white/60 hidden md:inline font-medium truncate max-w-[150px]">
-                {currentUser?.name || "Admin"}
-              </span>
-              <div className="h-10 w-10 rounded-full bg-gradient-to-br from-rose-500 via-rose-600 to-orange-500 flex items-center justify-center text-white text-sm font-bold shadow-lg shadow-rose-500/30 ring-2 ring-gray-200 dark:ring-white/10">
-                {currentUser?.name?.charAt(0).toUpperCase() || "A"}
+            <div className="flex items-center gap-4">
+              <div className="hidden md:flex flex-col items-end">
+                <span className="text-sm font-semibold text-gray-900 dark:text-white truncate max-w-[150px]">
+                  {currentUser?.name || "Admin"}
+                </span>
+                <span className="text-xs text-gray-500 dark:text-gray-400 capitalize">
+                  {currentUser?.role || "admin"}
+                </span>
+              </div>
+              <div className="relative">
+                <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-rose-500 via-rose-600 to-orange-500 flex items-center justify-center text-white text-sm font-bold shadow-xl shadow-rose-500/30 ring-4 ring-white/20 dark:ring-black/20">
+                  {currentUser?.name?.charAt(0).toUpperCase() || "A"}
+                </div>
+                <div className="absolute -bottom-1 -right-1 h-4 w-4 rounded-full bg-green-500 border-2 border-white dark:border-gray-900 animate-pulse" />
               </div>
             </div>
           </div>
 
-          <header className="mb-4 sm:mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h1 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-white">{currentSectionLabel}</h1>
+          {/* Enhanced Header */}
+          <header className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="space-y-2">
+              <div className="flex items-center gap-3">
+                <div className="h-2 w-2 rounded-full bg-gradient-to-r from-rose-500 to-orange-500 animate-pulse" />
+                <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 dark:from-white dark:via-gray-100 dark:to-white bg-clip-text text-transparent">
+                  {currentSectionLabel}
+                </h1>
+              </div>
               {activeSection !== "store-products" && (
-                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+                <p className="text-sm text-gray-600 dark:text-gray-400 ml-5">
                   {activeSection === "dashboard"
                     ? "AvtoFix boshqaruv paneliga xush kelibsiz"
                     : "Tegishli ma'lumotlarni shu bo'limdan boshqaring"}
@@ -3462,14 +4119,17 @@ const AdminPanel = () => {
               )}
             </div>
             {activeSection === "masters" && (
-              <Button
+              <button
                 type="button"
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl border border-rose-500/60 bg-gradient-to-r from-red-500 via-rose-600 to-orange-500 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_20px_45px_-25px_rgba(244,63,94,0.7)] transition hover:-translate-y-0.5 hover:shadow-red-900/60"
+                className="group relative overflow-hidden rounded-2xl bg-gradient-to-r from-red-500 via-rose-600 to-orange-500 px-6 py-3 text-sm font-semibold text-white shadow-xl shadow-rose-500/30 transition-all duration-200 hover:shadow-2xl hover:shadow-rose-500/40 hover:-translate-y-1 active:translate-y-0"
                 onClick={handleOpenProfessionalDialog}
               >
-                <Plus className="h-4 w-4" />
-                Usta qo'shish
-              </Button>
+                <div className="absolute inset-0 bg-gradient-to-r from-red-600 via-rose-700 to-orange-600 opacity-0 transition-opacity group-hover:opacity-100" />
+                <div className="relative flex items-center gap-2">
+                  <Plus className="h-5 w-5 transition-transform group-hover:rotate-90" />
+                  Usta qo'shish
+                </div>
+              </button>
             )}
           </header>
 
@@ -3577,28 +4237,84 @@ const AdminPanel = () => {
                       Mutaxassislik yo'q. Yuqoridagi maydondan qo'shing.
                     </p>
                   ) : (
-                    specialties.map((spec) => (
-                      <label
-                        key={spec._id}
-                        className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg cursor-pointer transition-colors ${(professionalForm.specialties || []).includes(spec.name)
-                          ? "bg-emerald-100 dark:bg-emerald-500/20 border-emerald-500 text-emerald-700 dark:text-emerald-300"
-                          : "bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600"
-                          } border`}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={(professionalForm.specialties || []).includes(spec.name)}
-                          onChange={() => handleToggleSpecialty(spec.name)}
-                          className="sr-only"
-                        />
-                        <span className="text-sm font-medium">{spec.name}</span>
-                        {(professionalForm.specialties || []).includes(spec.name) && (
-                          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                          </svg>
-                        )}
-                      </label>
-                    ))
+                    <div className="space-y-2">
+                      {specialties.map((spec) => (
+                        <div
+                          key={spec._id}
+                          className="flex items-center gap-2 p-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
+                        >
+                          {editingSpecialtyId === spec._id ? (
+                            // Tahrirlash rejimi
+                            <>
+                              <input
+                                type="text"
+                                value={editingSpecialtyName}
+                                onChange={(e) => setEditingSpecialtyName(e.target.value)}
+                                className="flex-1 px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') saveEditingSpecialty();
+                                  if (e.key === 'Escape') cancelEditingSpecialty();
+                                }}
+                                autoFocus
+                              />
+                              <button
+                                onClick={saveEditingSpecialty}
+                                className="p-1 text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300"
+                                title="Saqlash"
+                              >
+                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                </svg>
+                              </button>
+                              <button
+                                onClick={cancelEditingSpecialty}
+                                className="p-1 text-gray-600 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+                                title="Bekor qilish"
+                              >
+                                <X className="w-4 h-4" />
+                              </button>
+                            </>
+                          ) : (
+                            // Oddiy ko'rinish
+                            <>
+                              <label
+                                className={`flex-1 inline-flex items-center gap-2 px-3 py-1.5 rounded-lg cursor-pointer transition-colors ${(professionalForm.specialties || []).includes(spec.name)
+                                  ? "bg-emerald-100 dark:bg-emerald-500/20 border-emerald-500 text-emerald-700 dark:text-emerald-300"
+                                  : "bg-gray-50 dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600"
+                                  } border`}
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={(professionalForm.specialties || []).includes(spec.name)}
+                                  onChange={() => handleToggleSpecialty(spec.name)}
+                                  className="sr-only"
+                                />
+                                <span className="text-sm font-medium">{spec.name}</span>
+                                {(professionalForm.specialties || []).includes(spec.name) && (
+                                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                  </svg>
+                                )}
+                              </label>
+                              <button
+                                onClick={() => startEditingSpecialty(spec)}
+                                className="p-1 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+                                title="Tahrirlash"
+                              >
+                                <Edit className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={() => openDeleteSpecialtyModal(spec)}
+                                className="p-1 text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+                                title="O'chirish"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      ))}
+                    </div>
                   )}
                 </div>
                 {(professionalForm.specialties || []).length > 0 && (

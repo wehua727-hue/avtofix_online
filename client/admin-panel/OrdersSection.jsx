@@ -17,7 +17,8 @@ import {
   MapPin,
   Calendar,
   Eye,
-  Trash2
+  Trash2,
+  RefreshCw
 } from 'lucide-react';
 
 /**
@@ -168,105 +169,130 @@ const OrdersSection = () => {
 
   if (loading) {
     return (
-      <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-        <CardHeader>
-          <CardTitle className="text-gray-900 dark:text-white">Buyurtmalar</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-center py-8">
-            <div className="w-8 h-8 border-4 border-red-600 border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-[#0a0b14] dark:via-[#0f1117] dark:to-[#05060d] flex items-center justify-center">
+        <div className="text-center space-y-6">
+          <div className="relative">
+            <div className="h-16 w-16 border-4 border-rose-500/30 border-t-rose-500 rounded-full animate-spin mx-auto" />
+            <div className="absolute inset-0 h-16 w-16 border-4 border-transparent border-t-orange-500 rounded-full animate-spin mx-auto" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }} />
           </div>
-        </CardContent>
-      </Card>
+          <div className="space-y-2">
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+              Yuklanmoqda...
+            </h3>
+            <p className="text-gray-600 dark:text-gray-400">
+              Admin panel tayyorlanmoqda
+            </p>
+          </div>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-xl sm:rounded-2xl">
-      <CardHeader className="p-4 sm:p-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div>
-            <CardTitle className="text-gray-900 dark:text-white text-base sm:text-lg">Buyurtmalar</CardTitle>
-            <CardDescription className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm">
-              Barcha buyurtmalarni boshqaring
-            </CardDescription>
+    <Card className="bg-white dark:bg-gray-800/50 border-gray-200/60 dark:border-gray-700/60 backdrop-blur-xl shadow-2xl rounded-3xl">
+      <CardHeader className="p-6 border-b border-gray-200/50 dark:border-gray-600/50">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center shadow-lg">
+              <Package className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <CardTitle className="text-gray-900 dark:text-white text-xl font-bold">Buyurtmalar</CardTitle>
+              <CardDescription className="text-gray-600 dark:text-gray-400 text-sm">
+                Barcha buyurtmalarni boshqaring
+              </CardDescription>
+            </div>
           </div>
           <Button
             onClick={fetchOrders}
             variant="outline"
-            className="w-full sm:w-auto border-gray-300 dark:border-gray-600 bg-transparent text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white text-sm"
+            className="group border-gray-300/60 dark:border-gray-600/60 bg-white/80 dark:bg-gray-800/80 text-gray-700 dark:text-gray-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-cyan-50 dark:hover:from-blue-500/10 dark:hover:to-cyan-500/10 hover:text-blue-700 dark:hover:text-blue-400 hover:border-blue-400/60 transition-all duration-200 rounded-xl shadow-sm hover:shadow-lg"
           >
+            <RefreshCw className="w-4 h-4 mr-2 group-hover:rotate-180 transition-transform duration-500" />
             Yangilash
           </Button>
         </div>
       </CardHeader>
       <CardContent>
         {orders.length === 0 ? (
-          <div className="text-center py-6 sm:py-8">
-            <Package className="w-12 h-12 sm:w-16 sm:h-16 text-gray-400 dark:text-gray-600 mx-auto mb-3 sm:mb-4" />
-            <h3 className="text-lg sm:text-xl font-medium text-gray-600 dark:text-gray-400 mb-2">
+          <div className="text-center py-16">
+            <div className="relative mb-8">
+              <div className="h-24 w-24 mx-auto rounded-3xl bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700 flex items-center justify-center">
+                <Package className="w-12 h-12 text-gray-400 dark:text-gray-500" />
+              </div>
+              <div className="absolute -top-2 -right-2 h-8 w-8 rounded-full bg-gradient-to-br from-rose-500 to-orange-500 flex items-center justify-center">
+                <span className="text-white text-xs font-bold">0</span>
+              </div>
+            </div>
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
               Buyurtmalar yo'q
             </h3>
-            <p className="text-gray-500 text-sm">
-              Hozircha hech qanday buyurtma yo'q
+            <p className="text-gray-500 dark:text-gray-400 mb-6">
+              Hozircha hech qanday buyurtma yo'q. Yangi buyurtmalar paydo bo'lganda bu yerda ko'rinadi.
             </p>
+            <button
+              onClick={fetchOrders}
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-rose-500 to-orange-500 text-white font-semibold hover:from-rose-600 hover:to-orange-600 transition-all duration-200 shadow-lg hover:shadow-xl"
+            >
+              <RefreshCw className="w-4 h-4" />
+              Yangilash
+            </button>
           </div>
         ) : (
           <>
-            {/* Mobile card view */}
-            <div className="sm:hidden space-y-3">
+            {/* Enhanced Mobile card view */}
+            <div className="sm:hidden space-y-4">
               {orders.map((order) => {
                 const statusInfo = getOrderStatusInfo(order.status);
                 const StatusIcon = statusInfo.icon;
                 return (
                   <div 
                     key={order._id}
-                    className="rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/30 p-3 cursor-pointer"
+                    className="group relative overflow-hidden rounded-2xl border border-gray-200/60 dark:border-gray-700/60 bg-white/90 dark:bg-gray-700/40 backdrop-blur-xl p-4 cursor-pointer transition-all duration-300 hover:shadow-xl hover:shadow-gray-900/10 dark:hover:shadow-black/20 hover:-translate-y-1"
                     onClick={() => handleOrderClick(order)}
                   >
-                    <div className="flex items-start justify-between mb-2">
-                      <div>
-                        <p className="text-gray-900 dark:text-white font-medium text-sm">#{order.orderNumber}</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">{new Date(order.createdAt).toLocaleDateString('uz-UZ')}</p>
+                    <div className="absolute inset-0 bg-gradient-to-br from-white/50 to-transparent dark:from-white/5 dark:to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <div className="relative">
+                      <div className="flex items-start justify-between mb-3">
+                        <div>
+                          <p className="text-gray-900 dark:text-white font-bold text-base">#{order.orderNumber}</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">{new Date(order.createdAt).toLocaleDateString('uz-UZ')}</p>
+                        </div>
+                        <div className={`px-3 py-1.5 rounded-xl ${statusInfo.color} border text-xs font-semibold shadow-sm`}>
+                          <StatusIcon className="w-3 h-3 mr-1.5 inline" />
+                          {statusInfo.label}
+                        </div>
                       </div>
-                      <Badge className={`${statusInfo.color} border text-xs`}>
-                        <StatusIcon className="w-3 h-3 mr-1" />
-                        {statusInfo.label}
-                      </Badge>
-                    </div>
-                    <div className="grid grid-cols-2 gap-2 text-xs mb-2">
-                      <div>
-                        <span className="text-gray-500">Mijoz:</span>
-                        <p className="text-gray-900 dark:text-white">{order.userId?.name || 'Noma\'lum'}</p>
+                      <div className="grid grid-cols-2 gap-3 text-sm mb-3">
+                        <div className="space-y-1">
+                          <span className="text-gray-500 dark:text-gray-400 text-xs">Mijoz:</span>
+                          <p className="text-gray-900 dark:text-white font-medium">{order.userId?.name || 'Noma\'lum'}</p>
+                        </div>
+                        <div className="space-y-1">
+                          <span className="text-gray-500 dark:text-gray-400 text-xs">Summa:</span>
+                          <p className="text-gray-900 dark:text-white font-bold">{order.total.toLocaleString()} so'm</p>
+                        </div>
                       </div>
-                      <div>
-                        <span className="text-gray-500">Summa:</span>
-                        <p className="text-gray-900 dark:text-white font-medium">{order.total.toLocaleString()} so'm</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between pt-2 border-t border-gray-200 dark:border-gray-600">
-                      <p className="text-gray-600 dark:text-gray-400 text-xs truncate max-w-[50%]">
-                        {order.deliveryAddress?.address || 'Manzil yo\'q'}
-                      </p>
-                      <div className="flex items-center gap-1">
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="h-7 px-2 text-xs text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
-                          onClick={(e) => { e.stopPropagation(); handleOrderClick(order); }}
-                        >
-                          <Eye className="w-3 h-3 mr-1" />
-                          Ko'rish
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          disabled={deletingOrder === order._id}
-                          className="h-7 px-2 text-xs text-red-500 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300"
-                          onClick={(e) => { e.stopPropagation(); handleDeleteOrderClick(order._id); }}
-                        >
-                          <Trash2 className="w-3 h-3" />
-                        </Button>
+                      <div className="flex items-center justify-between pt-3 border-t border-gray-200/60 dark:border-gray-600/60">
+                        <p className="text-gray-600 dark:text-gray-400 text-xs truncate max-w-[60%]">
+                          {order.deliveryAddress?.address || 'Manzil yo\'q'}
+                        </p>
+                        <div className="flex items-center gap-2">
+                          <button
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-500/20 transition-colors text-xs font-medium"
+                            onClick={(e) => { e.stopPropagation(); handleOrderClick(order); }}
+                          >
+                            <Eye className="w-3 h-3" />
+                            Ko'rish
+                          </button>
+                          <button
+                            disabled={deletingOrder === order._id}
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-500/20 transition-colors text-xs font-medium disabled:opacity-50"
+                            onClick={(e) => { e.stopPropagation(); handleDeleteOrderClick(order._id); }}
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -409,13 +435,26 @@ const OrdersSection = () => {
         )}
       </CardContent>
 
-      {/* Order Details Modal */}
+      {/* Enhanced Order Details Modal */}
       <Dialog open={detailsModalOpen} onOpenChange={setDetailsModalOpen}>
-        <DialogContent className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white max-w-4xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-3">
-              <Package className="w-5 h-5 text-red-500" />
-              Buyurtma #{selectedOrder?.orderNumber}
+        <DialogContent className="bg-white/95 dark:bg-gray-800/95 backdrop-blur-2xl border-gray-200/60 dark:border-gray-700/60 text-gray-900 dark:text-white max-w-4xl max-h-[85vh] overflow-y-auto rounded-3xl shadow-2xl">
+          <DialogHeader className="pb-6 border-b border-gray-200/50 dark:border-gray-600/50">
+            <DialogTitle className="flex items-center gap-4 text-2xl font-bold">
+              <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center shadow-lg">
+                <Package className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <span>Buyurtma #{selectedOrder?.orderNumber}</span>
+                <p className="text-sm font-normal text-gray-500 dark:text-gray-400 mt-1">
+                  {selectedOrder && new Date(selectedOrder.createdAt).toLocaleDateString('uz-UZ', { 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })}
+                </p>
+              </div>
             </DialogTitle>
           </DialogHeader>
 
@@ -536,34 +575,49 @@ const OrdersSection = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation Modal */}
+      {/* Enhanced Delete Confirmation Modal */}
       <Dialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
-        <DialogContent className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white">
-          <DialogHeader>
-            <DialogTitle>Buyurtmani o'chirish</DialogTitle>
+        <DialogContent className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-2xl border border-red-200/60 dark:border-red-800/60 text-gray-900 dark:text-white rounded-3xl shadow-2xl max-w-md">
+          <DialogHeader className="text-center pb-6">
+            <div className="mx-auto mb-4 h-16 w-16 rounded-full bg-gradient-to-br from-red-500 to-rose-600 flex items-center justify-center shadow-lg">
+              <Trash2 className="w-8 h-8 text-white" />
+            </div>
+            <DialogTitle className="text-xl font-bold text-gray-900 dark:text-white">
+              Buyurtmani o'chirish
+            </DialogTitle>
           </DialogHeader>
-          <div className="py-4">
-            <p className="text-gray-700 dark:text-gray-300">
-              Buyurtmani o'chirishni xohlaysizmi? Bu amalni ortga qaytarib bo'lmaydi.
+          <div className="py-4 text-center">
+            <p className="text-gray-700 dark:text-gray-300 mb-2">
+              Bu buyurtmani butunlay o'chirishni xohlaysizmi?
+            </p>
+            <p className="text-sm text-red-600 dark:text-red-400 font-medium">
+              Bu amalni ortga qaytarib bo'lmaydi.
             </p>
           </div>
-          <div className="flex gap-3 justify-end">
+          <div className="flex gap-3 justify-center pt-4">
             <Button
               variant="outline"
               onClick={() => {
                 setDeleteConfirmOpen(false);
                 setOrderToDelete(null);
               }}
-              className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300"
+              className="px-6 py-2.5 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl"
             >
               Bekor qilish
             </Button>
             <Button
               onClick={confirmDeleteOrder}
               disabled={deletingOrder !== null}
-              className="bg-red-600 hover:bg-red-700 text-white"
+              className="px-6 py-2.5 bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50"
             >
-              {deletingOrder ? "O'chirilmoqda..." : "O'chirish"}
+              {deletingOrder ? (
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  O'chirilmoqda...
+                </div>
+              ) : (
+                "O'chirish"
+              )}
             </Button>
           </div>
         </DialogContent>

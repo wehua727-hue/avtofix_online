@@ -1299,6 +1299,28 @@ export const specialtiesAPI = {
     }
   },
 
+  // Update specialty
+  update: async (id, name) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/specialties/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          ...getAuthHeaders(),
+        },
+        body: JSON.stringify({ name }),
+      });
+      if (!response.ok) {
+        const error = await response.json().catch(() => null);
+        throw new Error(error?.error || "Mutaxassislikni tahrirlashda xatolik");
+      }
+      return await response.json();
+    } catch (error) {
+      console.error("Error updating specialty:", error);
+      throw error;
+    }
+  },
+
   // Delete specialty
   delete: async (id) => {
     try {
@@ -1307,7 +1329,8 @@ export const specialtiesAPI = {
         headers: getAuthHeaders(),
       });
       if (!response.ok) {
-        throw new Error("Mutaxassislikni o'chirishda xatolik");
+        const error = await response.json().catch(() => null);
+        throw new Error(error?.error || "Mutaxassislikni o'chirishda xatolik");
       }
       return await response.json();
     } catch (error) {
