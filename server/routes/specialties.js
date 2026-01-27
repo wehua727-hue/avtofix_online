@@ -41,6 +41,42 @@ router.post("/", async (req, res) => {
   }
 });
 
+// Update specialty
+router.put("/:id", async (req, res) => {
+  try {
+    const { name } = req.body;
+    
+    if (!name || !name.trim()) {
+      return res.status(400).json({ error: "Mutaxassislik nomi kiritilishi shart" });
+    }
+
+    // Mavjudligini tekshirish (o'zidan boshqa)
+    const existing = await Specialty.findOne({ 
+      name: { $regex: new RegExp(`^${name.trim()}$`, 'i') },
+      _id: { $ne: req.params.id }
+    });
+    
+    if (existing) {
+      return res.status(400).json({ error: "Bu mutaxassislik allaqachon mavjud" });
+    }
+
+    const specialty = await Specialty.findByIdAndUpdate(
+      req.params.id,
+      { name: name.trim() },
+      { new: true }
+    );
+    
+    if (!specialty) {
+      return res.status(404).json({ error: "Mutaxassislik topilmadi" });
+    }
+    
+    res.json(specialty);
+  } catch (error) {
+    console.error("Error updating specialty:", error);
+    res.status(500).json({ error: "Failed to update specialty" });
+  }
+});
+
 // Delete specialty
 router.delete("/:id", async (req, res) => {
   try {
