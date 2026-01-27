@@ -3663,7 +3663,7 @@ const AdminPanel = () => {
                         Hozircha mahsulotlar qo‘shilmagan.
                       </div>
                     ) : (
-                      <div className="space-y-3">
+                      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
                         {sortedStoreProducts
                           .filter((product) => {
                             if (!storeProductSearch.trim()) return true;
@@ -3722,132 +3722,167 @@ const AdminPanel = () => {
                             return (
                               <div
                                 key={product._id}
-                                className="group rounded-2xl border p-4 backdrop-blur-sm bg-white dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 transition-all"
+                                className="group relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl hover:bg-white/10 transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl hover:shadow-white/10"
                               >
-                                <div className="flex gap-4">
-                                  {/* Rasm */}
-                                  <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800">
+                                {/* Gradient overlay */}
+                                <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-purple-500/5 to-pink-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                                
+                                {/* Content */}
+                                <div className="relative p-6">
+                                  {/* Product Image */}
+                                  <div className="relative mb-4 aspect-square overflow-hidden rounded-2xl bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900">
                                     {(() => {
                                       // Avval product.images ni tekshiramiz (ko'p rasm yuklangan bo'lsa)
                                       if (Array.isArray(product.images) && product.images.length > 0) {
-                                        return <img src={product.images[0]} alt={product.name} className="h-full w-full object-cover" />;
+                                        return (
+                                          <img 
+                                            src={product.images[0]} 
+                                            alt={product.name} 
+                                            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-110" 
+                                          />
+                                        );
                                       }
                                       // Keyin product.imageUrl ni tekshiramiz (bitta rasm yuklangan bo'lsa)
                                       else if (product.imageUrl) {
-                                        return <img src={product.imageUrl} alt={product.name} className="h-full w-full object-cover" />;
+                                        return (
+                                          <img 
+                                            src={product.imageUrl} 
+                                            alt={product.name} 
+                                            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-110" 
+                                          />
+                                        );
                                       }
                                       // Aks holda rasm yo'q
                                       else {
                                         return (
-                                          <div className="flex h-full w-full items-center justify-center text-[10px] text-gray-400 dark:text-gray-500">
-                                            Rasm yo'q
+                                          <div className="flex h-full w-full items-center justify-center">
+                                            <div className="text-center">
+                                              <ImageIcon className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500 mb-2" />
+                                              <p className="text-xs text-gray-400 dark:text-gray-500">Rasm yo'q</p>
+                                            </div>
                                           </div>
                                         );
                                       }
                                     })()}
-                                  </div>
-
-                                  {/* Ma'lumotlar */}
-                                  <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-2 flex-wrap">
-                                      <h4
-                                        className="text-sm font-semibold text-gray-900 dark:text-white line-clamp-2 cursor-pointer hover:line-clamp-none transition-all"
-                                        title={product.name}
-                                        onClick={(e) => {
-                                          e.currentTarget.classList.toggle('line-clamp-2');
-                                          e.currentTarget.classList.toggle('line-clamp-none');
-                                        }}
-                                      >
-                                        {product.name}
-                                      </h4>
+                                    
+                                    {/* Badges overlay */}
+                                    <div className="absolute top-3 left-3 flex flex-wrap gap-2">
                                       {product.sku && (
-                                        <span className="px-2 py-0.5 text-[10px] font-medium bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 rounded-full">
+                                        <span className="px-2 py-1 text-xs font-semibold bg-blue-500/90 text-white rounded-full backdrop-blur-sm">
                                           #{product.sku}
                                         </span>
                                       )}
                                       {isPostSystemProduct && (
-                                        <span className="px-2 py-0.5 text-[10px] font-medium bg-purple-100 dark:bg-purple-500/20 text-purple-600 dark:text-purple-400 rounded-full">
+                                        <span className="px-2 py-1 text-xs font-semibold bg-purple-500/90 text-white rounded-full backdrop-blur-sm">
                                           POST
                                         </span>
                                       )}
                                     </div>
-
-                                    {/* Kod va Katalog */}
-                                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1">
-                                      {product.code && (
-                                        <span className="text-[11px] text-gray-600 dark:text-gray-400" title={`Kod: ${product.code}`}>
-                                          Kod: <span className="text-gray-900 dark:text-white font-medium">{product.code}</span>
-                                        </span>
+                                    
+                                    {/* Variants indicator */}
+                                    {((Array.isArray(product.variants) && product.variants.length > 0) ||
+                                      (Array.isArray(product.variantSummaries) && product.variantSummaries.length > 0)) && (
+                                        <div className="absolute top-3 right-3">
+                                          <span className="flex items-center gap-1 px-2 py-1 text-xs font-semibold bg-emerald-500/90 text-white rounded-full backdrop-blur-sm">
+                                            <Layers className="h-3 w-3" />
+                                            {(product.variantSummaries?.length || product.variants?.length || 0)}
+                                          </span>
+                                        </div>
                                       )}
-                                      {product.catalogNumber && (
-                                        <span className="text-[11px] text-gray-600 dark:text-gray-400" title={`Katalog: ${product.catalogNumber}`}>
-                                          Katalog: <span className="text-gray-900 dark:text-white font-medium">{product.catalogNumber}</span>
-                                        </span>
-                                      )}
-                                    </div>
+                                  </div>
 
-                                    {/* Kategoriya */}
+                                  {/* Product Info */}
+                                  <div className="space-y-3">
+                                    {/* Title */}
+                                    <h4 className="text-lg font-bold text-white line-clamp-2 group-hover:text-blue-300 transition-colors">
+                                      {product.name}
+                                    </h4>
+
+                                    {/* Category */}
                                     {product.category && (
-                                      <div className="mt-1">
-                                        <span className="px-2 py-0.5 text-[10px] font-medium bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 rounded-full">
+                                      <div className="flex items-center gap-2">
+                                        <Tag className="h-4 w-4 text-emerald-400" />
+                                        <span className="text-sm text-emerald-300 font-medium">
                                           {product.category}
                                         </span>
                                       </div>
                                     )}
 
-                                    {/* Info grid */}
-                                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-xs">
-                                      {/* Asl narxi (POST: basePrice, Marketplace: originalPrice) */}
-                                      {(product.originalPrice || product.basePrice) && (
-                                        <span className="text-gray-600 dark:text-gray-400">
-                                          Asl: <span className="text-gray-900 dark:text-white font-medium">{product.originalPrice || product.basePrice}</span> {product.currency || 'USD'}
+                                    {/* Codes */}
+                                    <div className="flex flex-wrap gap-3 text-xs text-white/70">
+                                      {product.code && (
+                                        <span>
+                                          Kod: <span className="text-white font-medium">{product.code}</span>
                                         </span>
                                       )}
-                                      {/* Foiz (POST: priceMultiplier, Marketplace: markupPercent) */}
-                                      {(product.markupPercent || product.priceMultiplier) && (
-                                        <span className="text-blue-600 dark:text-blue-400">
-                                          +{product.markupPercent || product.priceMultiplier}%
+                                      {product.catalogNumber && (
+                                        <span>
+                                          Katalog: <span className="text-white font-medium">{product.catalogNumber}</span>
                                         </span>
                                       )}
-                                      <span className="text-gray-600 dark:text-gray-400">
-                                        <span className="text-gray-900 dark:text-white font-medium">{product.price}</span> {product.currency || 'USD'}
-                                      </span>
-                                      <span className="text-gray-600 dark:text-gray-400">
-                                        Ombor: <span className="text-gray-900 dark:text-white font-medium">{product.stockCount ?? product.stock ?? 0}</span>
-                                      </span>
-                                      {((Array.isArray(product.variants) && product.variants.length > 0) ||
-                                        (Array.isArray(product.variantSummaries) && product.variantSummaries.length > 0)) && (
-                                          <span className="text-purple-600 dark:text-purple-400">
-                                            {(product.variantSummaries?.length || product.variants?.length || 0)} ta xil
+                                    </div>
+
+                                    {/* Price Section */}
+                                    <div className="space-y-2">
+                                      <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                          <DollarSign className="h-4 w-4 text-green-400" />
+                                          <span className="text-xl font-bold text-green-300">
+                                            {product.price} {product.currency || 'USD'}
+                                          </span>
+                                        </div>
+                                        {(product.markupPercent || product.priceMultiplier) && (
+                                          <span className="px-2 py-1 text-xs font-semibold bg-blue-500/20 text-blue-300 rounded-full">
+                                            +{product.markupPercent || product.priceMultiplier}%
                                           </span>
                                         )}
+                                      </div>
+                                      
+                                      {(product.originalPrice || product.basePrice) && (
+                                        <div className="text-sm text-white/60">
+                                          Asl narx: <span className="font-medium">{product.originalPrice || product.basePrice} {product.currency || 'USD'}</span>
+                                        </div>
+                                      )}
                                     </div>
-                                  </div>
 
-                                  {/* Tugmalar - POST tizim mahsulotlari uchun faqat tahrirlash tugmasi */}
-                                  <div className="flex items-center gap-2 flex-shrink-0">
-                                    <Button
-                                      type="button"
-                                      size="sm"
-                                      variant="outline"
-                                      onClick={() => handleEditStoreProduct(product)}
-                                      disabled={isPostSystemProduct ? false : !canEdit}
-                                      className="rounded-lg border border-amber-300 dark:border-amber-500/40 bg-amber-50 dark:bg-amber-500/10 px-3 py-1.5 text-xs font-medium text-amber-700 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-500/20 disabled:opacity-50"
-                                    >
-                                      Tahrirlash
-                                    </Button>
-                                    {!isPostSystemProduct && (
+                                    {/* Stock */}
+                                    <div className="flex items-center gap-2 text-sm">
+                                      <div className={`h-2 w-2 rounded-full ${(product.stockCount ?? product.stock ?? 0) > 0 ? 'bg-green-400' : 'bg-red-400'}`} />
+                                      <span className="text-white/70">
+                                        Ombor: <span className="text-white font-medium">{product.stockCount ?? product.stock ?? 0}</span>
+                                      </span>
+                                    </div>
+
+                                    {/* Action Buttons */}
+                                    <div className="flex gap-2 pt-4 border-t border-white/10">
                                       <Button
                                         type="button"
                                         size="sm"
                                         variant="outline"
-                                        disabled={storeProductDeletingId === product._id || !canEdit}
-                                        onClick={() => handleDeleteStoreProduct(product._id)}
-                                        className="rounded-lg border border-rose-300 dark:border-rose-500/40 bg-rose-50 dark:bg-rose-500/10 px-3 py-1.5 text-xs font-medium text-rose-700 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-500/20 disabled:opacity-50"
+                                        onClick={() => handleEditStoreProduct(product)}
+                                        disabled={isPostSystemProduct ? false : !canEdit}
+                                        className="flex-1 rounded-xl border-amber-400/30 bg-amber-500/10 text-amber-300 hover:bg-amber-500/20 hover:text-amber-200 disabled:opacity-50 transition-all"
                                       >
-                                        {storeProductDeletingId === product._id ? "..." : "O'chirish"}
+                                        <Pencil className="h-4 w-4 mr-2" />
+                                        Tahrirlash
                                       </Button>
-                                    )}
+                                      {!isPostSystemProduct && (
+                                        <Button
+                                          type="button"
+                                          size="sm"
+                                          variant="outline"
+                                          disabled={storeProductDeletingId === product._id || !canEdit}
+                                          onClick={() => handleDeleteStoreProduct(product._id)}
+                                          className="rounded-xl border-rose-400/30 bg-rose-500/10 text-rose-300 hover:bg-rose-500/20 hover:text-rose-200 disabled:opacity-50 transition-all"
+                                        >
+                                          {storeProductDeletingId === product._id ? (
+                                            <Loader2 className="h-4 w-4 animate-spin" />
+                                          ) : (
+                                            <Trash2 className="h-4 w-4" />
+                                          )}
+                                        </Button>
+                                      )}
+                                    </div>
                                   </div>
                                 </div>
                               </div>
