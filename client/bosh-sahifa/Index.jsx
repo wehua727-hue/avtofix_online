@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { productsAPI, professionalsAPI } from "../services/api";
 import { useFavorites } from "@/context/FavoritesContext";
 import { formatCurrency } from "@/utils/currency";
+import FancyLoader from "@/components/FancyLoader";
 import {
   playStarButtonAnimation,
   playNavbarFavoriteAddAnimation,
@@ -495,42 +496,11 @@ const Index = () => {
     [navigate, toggleFavorite],
   );
 
-  // Показываем только skeleton без лоадера
+  // FancyLoader bilan loading ko'rsatish
   if (loading) {
     return (
-      <div className="min-h-screen text-gray-900 dark:text-white pb-20 sm:pb-0 transition-colors duration-300">
-        <section className="relative px-4 sm:px-6 pt-2 sm:pt-4 pb-8 sm:pb-16">
-          <div className="max-w-7xl mx-auto">
-            {/* Hero skeleton */}
-            <div className="h-48 sm:h-64 rounded-3xl bg-gray-200 dark:bg-white/10 mb-8 sm:mb-12" />
-            
-            {/* Products header skeleton */}
-            <div className="flex items-center justify-between mb-6">
-              <div className="h-6 w-40 bg-gray-200 dark:bg-white/10 rounded" />
-              <div className="h-10 w-24 bg-gray-200 dark:bg-white/10 rounded-xl" />
-            </div>
-            
-            {/* Products grid skeleton */}
-            <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-              {[...Array(8)].map((_, i) => (
-                <ProductSkeleton key={i} />
-              ))}
-            </div>
-            
-            {/* Professionals section skeleton */}
-            <div className="mt-16">
-              <div className="flex items-center justify-between mb-6">
-                <div className="h-6 w-48 bg-gray-200 dark:bg-white/10 rounded" />
-                <div className="h-10 w-24 bg-gray-200 dark:bg-white/10 rounded-xl" />
-              </div>
-              <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-                {[...Array(4)].map((_, i) => (
-                  <ProfessionalSkeleton key={i} />
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
+      <div className="min-h-screen flex items-center justify-center text-gray-900 dark:text-white">
+        <FancyLoader text="Yuklanmoqda" />
       </div>
     );
   }

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Wrench, Users, Package, Store } from 'lucide-react';
+import FancyLoader from './FancyLoader';
 
 const LoadingSpinner = ({ 
   size = 'md', 
@@ -53,6 +54,14 @@ const LoadingSpinner = ({
   };
 
   const IconComponent = icon || getDefaultIcon();
+
+  if (type === 'fancy') {
+    return (
+      <div className={`flex items-center justify-center ${className}`}>
+        <FancyLoader text={text || 'Yuklanmoqda'} />
+      </div>
+    );
+  }
 
   if (type === 'pulse') {
     return (
