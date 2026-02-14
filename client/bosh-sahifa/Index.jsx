@@ -118,6 +118,7 @@ const Index = () => {
   const [hasMore, setHasMore] = useState(true);
   const { toggleFavorite, isFavorite } = useFavorites();
   const navigate = useNavigate();
+  const isFetchingRef = useRef(false); // API so'rovi ketayotganini kuzatish
   
   // Highlight funksiyasi - topilgan so'zni sariq rangda ko'rsatish
   const highlightText = (text, query) => {
@@ -200,7 +201,14 @@ const Index = () => {
   };
   
   const fetchData = async () => {
+    // Agar allaqachon so'rov ketayotgan bo'lsa, qayta yubormaslik
+    if (isFetchingRef.current) {
+      console.log('⏭️ Skipping fetch - already in progress');
+      return;
+    }
+    
     try {
+      isFetchingRef.current = true;
       setLoading(true);
       
       // 1) Tezkor yuklash uchun keshdan o'qib turamiz (agar yangi bo'lsa),
@@ -238,8 +246,6 @@ const Index = () => {
       const productsData = productsRes.products || productsRes;
       const professionalsData = professionalsRes.professionals || professionalsRes;
       
-      console.log('📦 Products received from API:', productsData.length);
-      
       // Сортируем: новые товары (за последние 3 дня) в начало
       const sortedProducts = [...productsData]
         .sort((a, b) => {
@@ -257,7 +263,6 @@ const Index = () => {
       sessionStorage.setItem('home_hasMore', JSON.stringify(productsRes.pagination?.hasMore ?? false));
       sessionStorage.setItem('home_cache_time', String(Date.now()));
       
-      console.log('✅ Setting allProducts:', sortedProducts.length);
       setAllProducts(sortedProducts); // MUHIM - qidiruv uchun
       setProducts(sortedProducts);
       setProfessionals(professionalsData);
@@ -268,6 +273,7 @@ const Index = () => {
       setError("Failed to load data");
     } finally {
       setLoading(false);
+      isFetchingRef.current = false; // So'rov tugadi
     }
   };
 
@@ -428,23 +434,9 @@ const Index = () => {
     }
   }, [allProducts]);
 
-  // Birinchi yuklashni kuzatish uchun ref
-  const isInitialMount = useRef(true);
-  
   useEffect(() => {
-    // React StrictMode development rejimida useEffect'ni ikki marta ishga tushiradi
-    // Buni oldini olish uchun birinchi chaqiruvni kuzatamiz
-    if (isInitialMount.current) {
-      isInitialMount.current = false;
-      fetchData();
-      
-      // Har 30 sekundda mahsulotlarni yangilash (polling)
-      const pollInterval = setInterval(() => {
-        fetchData();
-      }, 30 * 1000); // 30 sekund
-      
-      return () => clearInterval(pollInterval);
-    }
+    // Faqat bir marta yuklash
+    fetchData();
   }, []);
 
   // Qidiruv event listener
