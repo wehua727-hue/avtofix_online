@@ -428,15 +428,23 @@ const Index = () => {
     }
   }, [allProducts]);
 
+  // Birinchi yuklashni kuzatish uchun ref
+  const isInitialMount = useRef(true);
+  
   useEffect(() => {
-    fetchData();
-    
-    // Har 30 sekundda mahsulotlarni yangilash (polling)
-    const pollInterval = setInterval(() => {
+    // React StrictMode development rejimida useEffect'ni ikki marta ishga tushiradi
+    // Buni oldini olish uchun birinchi chaqiruvni kuzatamiz
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
       fetchData();
-    }, 30 * 1000); // 30 sekund
-    
-    return () => clearInterval(pollInterval);
+      
+      // Har 30 sekundda mahsulotlarni yangilash (polling)
+      const pollInterval = setInterval(() => {
+        fetchData();
+      }, 30 * 1000); // 30 sekund
+      
+      return () => clearInterval(pollInterval);
+    }
   }, []);
 
   // Qidiruv event listener
