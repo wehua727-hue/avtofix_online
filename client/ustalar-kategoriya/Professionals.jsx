@@ -682,8 +682,9 @@ const Professionals = () => {
                                 <Navigation className="w-4 h-4 text-white" />
                               </div>
                               <div className="flex-1">
-                                <span className="text-sm font-medium text-emerald-600 dark:text-emerald-400 group-hover/distance:text-emerald-700 dark:group-hover/distance:text-emerald-300 transition-colors">
-                                  📍 {calculateDistance(
+                                <span className="text-sm font-medium text-emerald-600 dark:text-emerald-400 group-hover/distance:text-emerald-700 dark:group-hover/distance:text-emerald-300 transition-colors flex items-center gap-1">
+                                  <MapPin className="w-4 h-4" />
+                                  {calculateDistance(
                                     userCoordinates.latitude,
                                     userCoordinates.longitude,
                                     professional.latitude,
@@ -712,8 +713,9 @@ const Professionals = () => {
                                   {professional.address || professional.district || professional.region}
                                 </span>
                                 {professional.latitude && professional.longitude && (
-                                  <div className="text-xs text-emerald-600 dark:text-emerald-400 opacity-0 group-hover/location:opacity-100 transition-opacity">
-                                    📍 Xaritada ko'rish
+                                  <div className="text-xs text-emerald-600 dark:text-emerald-400 opacity-0 group-hover/location:opacity-100 transition-opacity flex items-center gap-1">
+                                    <MapPin className="w-3 h-3" />
+                                    Xaritada ko'rish
                                   </div>
                                 )}
                               </div>

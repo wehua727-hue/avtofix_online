@@ -64,6 +64,7 @@ import {
   Tag,
   DollarSign,
   Layers,
+  Lightbulb,
 } from "lucide-react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -4379,8 +4380,9 @@ const AdminPanel = () => {
                     )}
                   </Button>
                 </div>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  💡 GPS tugmasi telefondan aniqroq ishlaydi. Kompyuterda taxminiy manzil ko'rsatishi mumkin.
+                <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                  <Lightbulb className="w-3 h-3" />
+                  GPS tugmasi telefondan aniqroq ishlaydi. Kompyuterda taxminiy manzil ko'rsatishi mumkin.
                 </p>
               </div>
 
@@ -4422,8 +4424,9 @@ const AdminPanel = () => {
                       </svg>
                     </div>
                   </div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    💡 Google Maps'dan "Share" → "Copy link" yoki Telegram'dan location'ni shu yerga tashlang
+                  <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                    <Lightbulb className="w-3 h-3" />
+                    Google Maps'dan "Share" → "Copy link" yoki Telegram'dan location'ni shu yerga tashlang
                   </p>
                   {professionalForm.locationError && (
                     <p className="text-xs text-red-500 dark:text-red-400">

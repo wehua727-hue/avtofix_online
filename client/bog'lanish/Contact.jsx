@@ -486,8 +486,9 @@ const Contact = () => {
                         </div>
                         <div className="flex-1">
                           <p className="text-xs font-medium text-blue-600 dark:text-blue-400 uppercase tracking-wide">Joylashuv</p>
-                          <p className="text-sm text-gray-600 dark:text-gray-400 font-mono">
-                            📍 {professional.latitude.toFixed(6)}, {professional.longitude.toFixed(6)}
+                          <p className="text-sm text-gray-600 dark:text-gray-400 font-mono flex items-center gap-1">
+                            <MapPin className="w-3 h-3" />
+                            {professional.latitude.toFixed(6)}, {professional.longitude.toFixed(6)}
                           </p>
                         </div>
                       </div>
@@ -603,7 +604,7 @@ const Contact = () => {
                 className="w-full bg-gradient-to-r from-red-500 via-rose-500 to-pink-500 hover:from-red-600 hover:via-rose-600 hover:to-pink-600 disabled:from-gray-200 disabled:to-gray-300 dark:disabled:from-zinc-700 dark:disabled:to-zinc-800 disabled:text-gray-400 dark:disabled:text-zinc-500 text-white font-bold py-4 px-6 rounded-xl flex items-center justify-center gap-3 transition-all duration-300 shadow-xl shadow-red-500/25 hover:shadow-2xl hover:shadow-red-500/30 disabled:shadow-none transform hover:-translate-y-1 active:scale-[0.98] text-lg"
               >
                 <Phone className="w-6 h-6" />
-                📞 Qo'ng'iroq qilish
+                Qo'ng'iroq qilish
               </button>
             </div>
           </div>

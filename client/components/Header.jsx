@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { ShoppingCart, Search, Star, LayoutGrid, Moon, Sun, ChevronRight } from "lucide-react";
+import { ShoppingCart, Search, Star, LayoutGrid, Moon, Sun, ChevronRight, Sparkles } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useCart } from "@/context/CartContext";
 import { useFavorites } from "@/context/FavoritesContext";
@@ -12,7 +12,7 @@ import SearchAutocomplete from "./SearchAutocomplete";
 
 // Быстрые категории для отображения под навбаром
 const QUICK_CATEGORIES = [
-  { id: "new", name: "✨ Yangi", slug: "new" },
+  { id: "new", name: "Yangi", slug: "new", icon: Sparkles },
 ];
 
 export default function Header() {
@@ -202,15 +202,19 @@ export default function Header() {
               style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             >
               {/* Быстрые категории */}
-              {QUICK_CATEGORIES.map((cat) => (
-                <Link
-                  key={cat.id}
-                  to={`/categories?filter=${cat.slug}`}
-                  className="flex-shrink-0 px-4 py-2 text-xs sm:text-sm font-semibold bg-gradient-to-r from-rose-500 to-orange-500 text-white rounded-xl shadow-lg shadow-rose-500/30 hover:shadow-xl hover:shadow-rose-500/40 hover:-translate-y-0.5 transition-all duration-300 whitespace-nowrap"
-                >
-                  {cat.name}
-                </Link>
-              ))}
+              {QUICK_CATEGORIES.map((cat) => {
+                const Icon = cat.icon;
+                return (
+                  <Link
+                    key={cat.id}
+                    to={`/categories?filter=${cat.slug}`}
+                    className="flex-shrink-0 flex items-center gap-1.5 px-4 py-2 text-xs sm:text-sm font-semibold bg-gradient-to-r from-rose-500 to-orange-500 text-white rounded-xl shadow-lg shadow-rose-500/30 hover:shadow-xl hover:shadow-rose-500/40 hover:-translate-y-0.5 transition-all duration-300 whitespace-nowrap"
+                  >
+                    <Icon className="w-4 h-4" />
+                    {cat.name}
+                  </Link>
+                );
+              })}
 
               {/* Разделитель */}
               <div className="flex-shrink-0 w-px h-5 bg-gradient-to-b from-transparent via-gray-300 dark:via-white/20 to-transparent mx-1" />

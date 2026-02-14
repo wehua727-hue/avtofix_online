@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useSearchParams, Link, useNavigate } from "react-router-dom";
 import { categoriesAPI, productsAPI } from "@/services/api";
-import { ChevronRight, ChevronLeft, Star, Store, Home, ArrowUpRight, ChevronDown, SlidersHorizontal, X } from "lucide-react"; 
+import { ChevronRight, ChevronLeft, Star, Store, Home, ArrowUpRight, ChevronDown, SlidersHorizontal, X, Sparkles, DollarSign, Gem } from "lucide-react"; 
 import { useFavorites } from "@/context/FavoritesContext";
 import { formatCurrency } from "@/utils/currency";
 import { toast } from "sonner";
@@ -957,10 +957,10 @@ const ProductCategory = () => {
                       onClick={() => setSortDropdownOpen(!sortDropdownOpen)}
                       className="flex items-center gap-2 px-3 sm:px-4 py-2.5 rounded-xl bg-white/80 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/10 transition-all"
                     >
-                    <span>
-                      {sortBy === "new" && "✨ Yangi"}
-                      {sortBy === "cheap" && "💰 Arzon"}
-                      {sortBy === "expensive" && "💎 Qimmat"}
+                    <span className="flex items-center gap-1.5">
+                      {sortBy === "new" && <><Sparkles className="w-4 h-4" /> Yangi</>}
+                      {sortBy === "cheap" && <><DollarSign className="w-4 h-4" /> Arzon</>}
+                      {sortBy === "expensive" && <><Gem className="w-4 h-4" /> Qimmat</>}
                     </span>
                     <ChevronDown className={`w-4 h-4 transition-transform ${sortDropdownOpen ? 'rotate-180' : ''}`} />
                   </button>
@@ -969,33 +969,36 @@ const ProductCategory = () => {
                     <div className="absolute right-0 top-full mt-2 w-44 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-white/10 shadow-xl shadow-black/10 dark:shadow-black/30 z-50 overflow-hidden">
                       <button
                         onClick={() => { setSortBy("new"); setSortDropdownOpen(false); }}
-                        className={`w-full px-4 py-3 text-left text-sm font-medium transition-colors ${
+                        className={`w-full px-4 py-3 text-left text-sm font-medium transition-colors flex items-center gap-2 ${
                           sortBy === "new" 
                             ? "bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400" 
                             : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5"
                         }`}
                       >
-                        ✨ Yangi
+                        <Sparkles className="w-4 h-4" />
+                        Yangi
                       </button>
                       <button
                         onClick={() => { setSortBy("cheap"); setSortDropdownOpen(false); }}
-                        className={`w-full px-4 py-3 text-left text-sm font-medium transition-colors ${
+                        className={`w-full px-4 py-3 text-left text-sm font-medium transition-colors flex items-center gap-2 ${
                           sortBy === "cheap" 
                             ? "bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400" 
                             : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5"
                         }`}
                       >
-                        💰 Arzon
+                        <DollarSign className="w-4 h-4" />
+                        Arzon
                       </button>
                       <button
                         onClick={() => { setSortBy("expensive"); setSortDropdownOpen(false); }}
-                        className={`w-full px-4 py-3 text-left text-sm font-medium transition-colors ${
+                        className={`w-full px-4 py-3 text-left text-sm font-medium transition-colors flex items-center gap-2 ${
                           sortBy === "expensive" 
                             ? "bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400" 
                             : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5"
                         }`}
                       >
-                        💎 Qimmat
+                        <Gem className="w-4 h-4" />
+                        Qimmat
                       </button>
                     </div>
                   )}
@@ -1056,8 +1059,9 @@ const ProductCategory = () => {
                       {/* Метка "Yangi" для новых товаров */}
                       {isNewProduct(product) && (
                         <div className="absolute left-2 top-2 sm:left-3 sm:top-3 z-10">
-                          <span className="px-2 py-1 text-[10px] sm:text-xs font-bold text-white bg-gradient-to-r from-emerald-500 to-teal-500 rounded-lg shadow-lg shadow-emerald-500/30">
-                            ✨ Yangi
+                          <span className="flex items-center gap-1 px-2 py-1 text-[10px] sm:text-xs font-bold text-white bg-gradient-to-r from-emerald-500 to-teal-500 rounded-lg shadow-lg shadow-emerald-500/30">
+                            <Sparkles className="w-3 h-3" />
+                            Yangi
                           </span>
                         </div>
                       )}

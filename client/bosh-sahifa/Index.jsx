@@ -655,8 +655,9 @@ const Index = () => {
                   {/* Метка "Yangi" для новых товаров */}
                   {isNewProduct(product) && (
                     <div className="absolute left-2 top-2 sm:left-3 sm:top-3 z-10">
-                      <span className="px-2 py-1 text-[10px] sm:text-xs font-bold text-white bg-gradient-to-r from-emerald-500 to-teal-500 rounded-lg shadow-lg shadow-emerald-500/30">
-                        ✨ Yangi
+                      <span className="flex items-center gap-1 px-2 py-1 text-[10px] sm:text-xs font-bold text-white bg-gradient-to-r from-emerald-500 to-teal-500 rounded-lg shadow-lg shadow-emerald-500/30">
+                        <Sparkles className="w-3 h-3" />
+                        Yangi
                       </span>
                     </div>
                   )}
