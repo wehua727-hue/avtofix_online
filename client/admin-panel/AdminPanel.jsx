@@ -71,6 +71,23 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
 
+// Debounce hook for search optimization
+const useDebounce = (value, delay = 300) => {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+};
+
 
 
 const extractUzbekPhoneDigits = (value = "") => {
@@ -200,6 +217,9 @@ const AdminPanel = () => {
   const [storeProducts, setStoreProducts] = useState([]);
   const [storeProductsLoading, setStoreProductsLoading] = useState(false);
   const [storeProductSearch, setStoreProductSearch] = useState("");
+  
+  // Debounced search for better performance
+  const debouncedStoreProductSearch = useDebounce(storeProductSearch, 300);
 
   // Mahsulotlarni kod bo'yicha saralash (#1, #2, #3...)
   const sortedStoreProducts = useMemo(() => {
@@ -1174,40 +1194,52 @@ const AdminPanel = () => {
     }
   }, [activeSection, stores.length, fetchStores]);
 
-  // Load dashboard data
+  // Load dashboard data with parallel loading for better performance
   useEffect(() => {
     if (activeSection === "dashboard") {
-      // Xodim uchun users yuklanmaydi
-      if (currentUser?.role !== 'xodim') {
-        fetchUsers();
-      }
-      fetchProfessionals();
-      fetchOrders();
-      fetchStores();
-
-      // Fetch total products count (including variants)
-      const fetchTotalProducts = async () => {
-        try {
-          const response = await productsAPI.getAll({ expandVariants: true, limit: 999999 });
-          const allProducts = response.products || response;
-
-          // Ota mahsulotlar + variantlar sonini hisoblash
-          const totalWithVariants = allProducts.reduce((sum, product) => {
-            let count = 1; // Ota mahsulot
-            if (Array.isArray(product.variants) && product.variants.length > 0) {
-              count += product.variants.length; // Variantlar
-            }
-            return sum + count;
-          }, 0);
-
-          console.log('📊 Total products (with variants):', totalWithVariants);
-          console.log('📦 Total parent products:', allProducts.length);
-          setTotalProductsCount(totalWithVariants);
-        } catch (error) {
-          console.error('Error fetching total products:', error);
+      // Parallel loading - barcha ma'lumotlarni bir vaqtda yuklash
+      const loadDashboardData = async () => {
+        const promises = [];
+        
+        // Xodim uchun users yuklanmaydi
+        if (currentUser?.role !== 'xodim') {
+          promises.push(fetchUsers());
         }
+        
+        promises.push(
+          fetchProfessionals(),
+          fetchOrders(),
+          fetchStores()
+        );
+
+        // Fetch total products count (including variants)
+        const fetchTotalProducts = async () => {
+          try {
+            const response = await productsAPI.getAll({ expandVariants: true, limit: 999999 });
+            const allProducts = response.products || response;
+
+            // Ota mahsulotlar + variantlar sonini hisoblash
+            const totalWithVariants = allProducts.reduce((sum, product) => {
+              let count = 1; // Ota mahsulot
+              if (Array.isArray(product.variants) && product.variants.length > 0) {
+                count += product.variants.length; // Variantlar
+              }
+              return sum + count;
+            }, 0);
+
+            setTotalProductsCount(totalWithVariants);
+          } catch (error) {
+            console.error('Error fetching total products:', error);
+          }
+        };
+        
+        promises.push(fetchTotalProducts());
+        
+        // Barcha so'rovlarni parallel yuklash
+        await Promise.allSettled(promises);
       };
-      fetchTotalProducts();
+      
+      loadDashboardData();
     }
   }, [activeSection, fetchUsers, fetchProfessionals, fetchOrders, fetchStores, currentUser?.role]);
 
@@ -2467,7 +2499,15 @@ const AdminPanel = () => {
         return (
           <div className="space-y-4">
             {professionalsLoading ? (
-              <p className="text-gray-600 dark:text-white/60">Ustalar yuklanmoqda...</p>
+              <div className="flex items-center justify-center py-20">
+                <div className="text-center">
+                  <div className="relative inline-block">
+                    <div className="w-12 h-12 border-4 border-emerald-500/20 border-t-emerald-500 rounded-full animate-spin" />
+                    <Users className="absolute inset-0 m-auto h-5 w-5 text-emerald-400 animate-pulse" />
+                  </div>
+                  <p className="mt-3 text-sm text-gray-600 dark:text-white/60">Ustalar yuklanmoqda...</p>
+                </div>
+              </div>
             ) : professionals.length === 0 ? (
               <Card className="rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 shadow-sm dark:shadow-inner dark:shadow-black/20">
                 <CardContent className="p-6 text-center text-gray-600 dark:text-white/65">
@@ -3545,8 +3585,14 @@ const AdminPanel = () => {
         return (
           <div className="space-y-6">
             {storeDetailsLoading ? (
-              <div className="flex items-center justify-center py-12">
-                <LoadingSpinner type="pulse" size="lg" />
+              <div className="flex items-center justify-center py-20">
+                <div className="text-center">
+                  <div className="relative inline-block">
+                    <div className="w-16 h-16 border-4 border-purple-500/20 border-t-purple-500 rounded-full animate-spin" />
+                    <Store className="absolute inset-0 m-auto h-6 w-6 text-purple-400 animate-pulse" />
+                  </div>
+                  <p className="mt-4 text-sm text-white/70">Magazin ma'lumotlari yuklanmoqda...</p>
+                </div>
               </div>
             ) : storeDetailsError ? (
               <div className="rounded-3xl border border-rose-500/30 bg-gradient-to-br from-rose-500/10 via-rose-500/5 to-transparent backdrop-blur-xl">
@@ -3644,20 +3690,14 @@ const AdminPanel = () => {
                 <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-white/5 via-white/2 to-transparent backdrop-blur-xl">
                   <div className="p-6">
                     {storeProductsLoading ? (
-                      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                        {[...Array(6)].map((_, i) => (
-                          <div key={i} className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm p-6">
-                            <div className="aspect-square mb-4 rounded-xl bg-white/10 animate-pulse" />
-                            <div className="space-y-3">
-                              <div className="h-4 bg-white/10 rounded animate-pulse" />
-                              <div className="h-3 bg-white/10 rounded w-2/3 animate-pulse" />
-                              <div className="flex gap-2">
-                                <div className="h-6 w-16 bg-white/10 rounded-full animate-pulse" />
-                                <div className="h-6 w-20 bg-white/10 rounded-full animate-pulse" />
-                              </div>
-                            </div>
+                      <div className="flex items-center justify-center py-20">
+                        <div className="text-center">
+                          <div className="relative inline-block">
+                            <div className="w-16 h-16 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin" />
+                            <Package className="absolute inset-0 m-auto h-6 w-6 text-blue-400 animate-pulse" />
                           </div>
-                        ))}
+                          <p className="mt-4 text-sm text-white/70">Mahsulotlar yuklanmoqda...</p>
+                        </div>
                       </div>
                     ) : sortedStoreProducts.length === 0 ? (
                       <div className="rounded-2xl border border-dashed border-white/15 bg-white/5 px-6 py-10 text-center text-sm text-white/60">
@@ -3667,8 +3707,8 @@ const AdminPanel = () => {
                       <div className="space-y-3">
                         {sortedStoreProducts
                           .filter((product) => {
-                            if (!storeProductSearch.trim()) return true;
-                            const search = storeProductSearch.toLowerCase().trim();
+                            if (!debouncedStoreProductSearch.trim()) return true;
+                            const search = debouncedStoreProductSearch.toLowerCase().trim();
                             
                             // Parent product fields
                             const name = (product.name || '').toLowerCase();
