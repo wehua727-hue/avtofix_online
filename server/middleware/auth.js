@@ -84,4 +84,37 @@ export const requireHelperWithPermissions = (permissionKey) => {
   };
 };
 
+// JWT token authentication for comments
+export const authenticateToken = async (req, res, next) => {
+  try {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
+
+    if (!token) {
+      return res.status(401).json({ message: 'Token topilmadi' });
+    }
+
+    // Simple token validation - in production use JWT
+    // For now, we'll use userId from token as simple auth
+    const userId = token; // Simplified - should decode JWT
+    
+    const user = await User.findById(userId);
+    
+    if (!user) {
+      return res.status(401).json({ message: 'Foydalanuvchi topilmadi' });
+    }
+
+    req.user = {
+      userId: user._id.toString(),
+      name: user.name,
+      role: user.role
+    };
+
+    next();
+  } catch (error) {
+    console.error('Token authentication error:', error);
+    return res.status(403).json({ message: 'Token noto\'g\'ri' });
+  }
+};
+
 export default auth;

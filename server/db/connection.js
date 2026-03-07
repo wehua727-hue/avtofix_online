@@ -4,12 +4,15 @@ const connectDB = async () => {
   try {
     console.log("🔄 MongoDB'ga ulanmoqda...");
     
-    // Connection options
+    // Connection options - timeout vaqtini oshirdik
     const options = {
-      serverSelectionTimeoutMS: 10000, // 10 soniya timeout
-      socketTimeoutMS: 45000, // 45 soniya socket timeout
+      serverSelectionTimeoutMS: 30000, // 30 soniya timeout (10 dan 30 ga)
+      socketTimeoutMS: 60000, // 60 soniya socket timeout (45 dan 60 ga)
+      connectTimeoutMS: 30000, // 30 soniya connect timeout
       maxPoolSize: 20,
       minPoolSize: 5,
+      retryWrites: true,
+      retryReads: true,
     };
 
     const conn = await mongoose.connect(process.env.MONGODB_URI, options);

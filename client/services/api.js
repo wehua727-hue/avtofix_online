@@ -1339,3 +1339,81 @@ export const specialtiesAPI = {
     }
   },
 };
+
+
+// Comments API
+export const commentsAPI = {
+  // Get unread comment counts for all products
+  getUnreadCounts: async () => {
+    try {
+      const storedUserId = localStorage.getItem("userId");
+      const storedUser = localStorage.getItem("user");
+      let userId = storedUserId;
+      
+      if (!userId && storedUser) {
+        try {
+          const parsedUser = JSON.parse(storedUser);
+          userId = parsedUser?.id;
+        } catch (e) {
+          console.error("Error parsing user:", e);
+        }
+      }
+      
+      if (!userId) {
+        return {}; // Agar user login qilmagan bo'lsa, bo'sh object qaytarish
+      }
+      
+      const response = await fetch(`${API_BASE_URL}/comments/unread-counts`, {
+        headers: {
+          'Authorization': `Bearer ${userId}`,
+        },
+      });
+      if (!response.ok) {
+        throw new Error("O'qilmagan izohlar sonini olishda xatolik");
+      }
+      return await response.json();
+    } catch (error) {
+      console.error("Error fetching unread counts:", error);
+      return {}; // Bo'sh object qaytarish
+    }
+  },
+
+  // Mark product comments as read
+  markAsRead: async (productId) => {
+    try {
+      const storedUserId = localStorage.getItem("userId");
+      const storedUser = localStorage.getItem("user");
+      let userId = storedUserId;
+      
+      if (!userId && storedUser) {
+        try {
+          const parsedUser = JSON.parse(storedUser);
+          userId = parsedUser?.id;
+        } catch (e) {
+          console.error("Error parsing user:", e);
+        }
+      }
+      
+      if (!userId) {
+        return; // Agar user login qilmagan bo'lsa, hech narsa qilmaslik
+      }
+      
+      const response = await fetch(`${API_BASE_URL}/comments/mark-read/${productId}`, {
+        method: "POST",
+        headers: {
+          'Authorization': `Bearer ${userId}`,
+        },
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Error marking comments as read:', errorData);
+        return; // Xatolikni throw qilmaslik
+      }
+      return await response.json();
+    } catch (error) {
+      console.error("Error marking comments as read:", error);
+      // Xatolikni throw qilmaslik - foydalanuvchi tajribasini buzmaslik uchun
+    }
+  },
+};

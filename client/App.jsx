@@ -30,6 +30,7 @@ import Header from "@/components/Header";
 import ScrollToTop from "@/components/ScrollToTop";
 import { useAuth } from "@/context/AuthContext";
 import MobileBottomNav from "@/components/MobileBottomNav";
+import CommunityChat from "@/components/CommunityChat";
 
 const AdminPanel = lazy(() => import("./admin-panel/AdminPanel"));
 
@@ -211,6 +212,7 @@ const AppContent = () => {
       </Suspense>
       </main>
             {!isAdminRoute && !isProductDetailPage && !isCartPage && <MobileBottomNav />}
+            {!isAdminRoute && <CommunityChat />}
     </>
   );
 };

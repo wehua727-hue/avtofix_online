@@ -12,6 +12,7 @@ import { getNavbarFavoriteElements } from "@/utils/favoriteAnimationRegistry";
 import { useCart } from "@/context/CartContext";
 import QuantityCounterCompact from "@/components/QuantityCounterCompact";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import ProductComments from "@/components/ProductComments";
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -1522,6 +1523,11 @@ const ProductDetail = () => {
           </div>
         </div>
       )}
+
+      {/* Product Comments Section */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+        <ProductComments productId={productId} productName={currentProduct?.name || product.name} />
+      </div>
     </div>
   );
 };

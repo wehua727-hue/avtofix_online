@@ -22,6 +22,7 @@ import managerRouter from "./routes/manager.js";
 import professionalCategoriesRouter from "./routes/professionalCategories.js";
 import carBrandsRouter from "./routes/carBrands.js";
 import specialtiesRouter from "./routes/specialties.js";
+import commentsRouter from "./routes/comments.js";
 
 export function createServer() {
   const app = express();
@@ -91,6 +92,7 @@ export function createServer() {
   app.use("/api/professional-categories", professionalCategoriesRouter);
   app.use("/api/car-brands", carBrandsRouter);
   app.use("/api/specialties", specialtiesRouter);
+  app.use("/api/comments", commentsRouter);
 
   return app;
 }

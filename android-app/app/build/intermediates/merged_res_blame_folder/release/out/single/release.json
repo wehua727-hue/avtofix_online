@@ -1,0 +1,14 @@
+[
+    {
+        "merged": "uz.avtofix.app-merged_res-32:/layout_activity_main.xml.flat",
+        "source": "uz.avtofix.app-main-33:/layout/activity_main.xml"
+    },
+    {
+        "merged": "uz.avtofix.app-merged_res-32:/xml_backup_rules.xml.flat",
+        "source": "uz.avtofix.app-main-33:/xml/backup_rules.xml"
+    },
+    {
+        "merged": "uz.avtofix.app-merged_res-32:/xml_data_extraction_rules.xml.flat",
+        "source": "uz.avtofix.app-main-33:/xml/data_extraction_rules.xml"
+    }
+]
