@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { productsAPI, professionalsAPI } from "../services/api";
 import { useFavorites } from "@/context/FavoritesContext";
 import { formatCurrency } from "@/utils/currency";
-import FancyLoader from "@/components/FancyLoader";
+import LoadingSpinner from "@/components/LoadingSpinner";
 import {
   playStarButtonAnimation,
   playNavbarFavoriteAddAnimation,
@@ -496,11 +496,11 @@ const Index = () => {
     [navigate, toggleFavorite],
   );
 
-  // FancyLoader bilan loading ko'rsatish
+  // LoadingSpinner bilan loading ko'rsatish
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-gray-900 dark:text-white">
-        <FancyLoader text="Yuklanmoqda" />
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-black/95">
+        <LoadingSpinner size="xl" color="rose" type="pulse" text="Yuklanmoqda..." />
       </div>
     );
   }
