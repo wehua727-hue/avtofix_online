@@ -1672,9 +1672,13 @@ const AdminPanel = () => {
         uploaded.push(url);
       }
       setStoreProductForm((prev) => {
-        const nextImages = [...(prev.images || []), ...uploaded];
-        const nextPreview = prev.imagePreview || nextImages[0] || "";
-        return { ...prev, images: nextImages, imagePreview: nextPreview };
+        const nextImages = [...uploaded, ...(prev.images || [])];
+        return { 
+          ...prev, 
+          images: nextImages, 
+          imageUrl: nextImages[0] || prev.imageUrl,
+          imagePreview: nextImages[0] || prev.imagePreview
+        };
       });
       toast.success(`${uploaded.length} ta rasm yuklandi`);
       event.target.value = "";
@@ -1687,8 +1691,12 @@ const AdminPanel = () => {
     setStoreProductForm((prev) => {
       const nextImages = [...(prev.images || [])];
       nextImages.splice(index, 1);
-      const nextPreview = nextImages[0] || "";
-      return { ...prev, images: nextImages, imagePreview: nextPreview };
+      return { 
+        ...prev, 
+        images: nextImages, 
+        imageUrl: nextImages[0] || "",
+        imagePreview: nextImages[0] || ""
+      };
     });
   };
 

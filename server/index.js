@@ -23,6 +23,7 @@ import professionalCategoriesRouter from "./routes/professionalCategories.js";
 import carBrandsRouter from "./routes/carBrands.js";
 import specialtiesRouter from "./routes/specialties.js";
 import commentsRouter from "./routes/comments.js";
+import imageSearchRouter from "./routes/imageSearch.js";
 
 export function createServer() {
   const app = express();
@@ -93,6 +94,7 @@ export function createServer() {
   app.use("/api/car-brands", carBrandsRouter);
   app.use("/api/specialties", specialtiesRouter);
   app.use("/api/comments", commentsRouter);
+  app.use("/api/image-search", imageSearchRouter);
 
   return app;
 }
