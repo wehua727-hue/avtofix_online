@@ -1213,7 +1213,8 @@ router.put("/:id", auth, (req, res) => {
         // Images ni qo'shish
         if (updates.images && Array.isArray(updates.images)) {
           filteredUpdates.images = updates.images;
-          filteredUpdates.imageUrl = updates.images[0] || existingProduct.imageUrl;
+          // Agar images bo'sh bo'lsa, imageUrl ham bo'sh bo'lishi kerak
+          filteredUpdates.imageUrl = updates.images.length > 0 ? updates.images[0] : "";
         } else if (updates.imageUrl) {
           filteredUpdates.imageUrl = updates.imageUrl;
         }

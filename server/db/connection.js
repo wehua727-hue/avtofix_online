@@ -4,6 +4,9 @@ const connectDB = async () => {
   try {
     console.log("🔄 MongoDB'ga ulanmoqda...");
     
+    // Mongoose global settings - buffering timeout'ni oshirish
+    mongoose.set('bufferTimeoutMS', 30000); // 30 soniya (10 dan 30 ga)
+    
     // Connection options - timeout vaqtini oshirdik
     const options = {
       serverSelectionTimeoutMS: 30000, // 30 soniya timeout (10 dan 30 ga)
