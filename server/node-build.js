@@ -8,8 +8,8 @@ import fs from "fs";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Определяем корневую директорию проекта (на уровень выше dist/server)
-const rootDir = path.resolve(__dirname, "../..");
+// Определяем корневую директорию проекта (на уровень выше server)
+const rootDir = path.resolve(__dirname, "..");
 const distPath = path.resolve(rootDir, "dist/spa");
 const indexHtmlPath = path.resolve(distPath, "index.html");
 
