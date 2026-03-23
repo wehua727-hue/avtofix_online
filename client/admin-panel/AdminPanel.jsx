@@ -3992,46 +3992,46 @@ const AdminPanel = () => {
         </DialogContent>
       </Dialog>
 
-      <div className="relative min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-[#0a0b14] dark:via-[#0f1117] dark:to-[#05060d] text-gray-900 dark:text-white">
+      <div className="relative min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-[#0a0b14] dark:via-[#0f1117] dark:to-[#05060d] text-gray-900 dark:text-white overflow-x-hidden">
         {/* Enhanced animated background */}
-        <div className="pointer-events-none absolute inset-0 overflow-hidden">
-          <div className="absolute -top-32 -left-16 h-96 w-96 rounded-full bg-gradient-to-br from-rose-500/20 via-pink-500/15 to-orange-500/10 dark:from-rose-500/30 dark:via-pink-500/25 dark:to-orange-500/20 blur-3xl animate-pulse" />
-          <div className="absolute top-1/4 -right-20 h-80 w-80 rounded-full bg-gradient-to-bl from-purple-500/15 via-indigo-500/10 to-blue-500/15 dark:from-purple-500/25 dark:via-indigo-500/20 dark:to-blue-500/25 blur-3xl animate-pulse" style={{ animationDelay: '2s' }} />
-          <div className="absolute bottom-[-80px] left-1/3 h-96 w-96 rounded-full bg-gradient-to-tr from-emerald-400/15 via-teal-400/10 to-cyan-400/15 dark:from-emerald-400/25 dark:via-teal-400/20 dark:to-cyan-400/25 blur-3xl animate-pulse" style={{ animationDelay: '4s' }} />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[600px] w-[600px] rounded-full bg-gradient-to-r from-rose-500/5 via-transparent to-blue-500/5 dark:from-rose-500/10 dark:to-blue-500/10 blur-3xl animate-spin" style={{ animationDuration: '20s' }} />
+        <div className="pointer-events-none fixed inset-0 overflow-hidden">
+          <div className="absolute -top-32 -left-16 h-64 w-64 sm:h-96 sm:w-96 rounded-full bg-gradient-to-br from-rose-500/20 via-pink-500/15 to-orange-500/10 dark:from-rose-500/30 dark:via-pink-500/25 dark:to-orange-500/20 blur-3xl animate-pulse" />
+          <div className="absolute top-1/4 -right-20 h-60 w-60 sm:h-80 sm:w-80 rounded-full bg-gradient-to-bl from-purple-500/15 via-indigo-500/10 to-blue-500/15 dark:from-purple-500/25 dark:via-indigo-500/20 dark:to-blue-500/25 blur-3xl animate-pulse" style={{ animationDelay: '2s' }} />
+          <div className="absolute bottom-[-80px] left-1/3 h-64 w-64 sm:h-96 sm:w-96 rounded-full bg-gradient-to-tr from-emerald-400/15 via-teal-400/10 to-cyan-400/15 dark:from-emerald-400/25 dark:via-teal-400/20 dark:to-cyan-400/25 blur-3xl animate-pulse" style={{ animationDelay: '4s' }} />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[400px] w-[400px] sm:h-[600px] sm:w-[600px] rounded-full bg-gradient-to-r from-rose-500/5 via-transparent to-blue-500/5 dark:from-rose-500/10 dark:to-blue-500/10 blur-3xl animate-spin" style={{ animationDuration: '20s' }} />
         </div>
 
         {/* Mobile sidebar overlay */}
         {sidebarOpen && (
           <div
-            className="fixed inset-0 z-20 bg-black/50 dark:bg-black/50 backdrop-blur-sm lg:hidden"
+            className="fixed inset-0 z-20 bg-black/60 dark:bg-black/70 backdrop-blur-sm lg:hidden"
             onClick={() => setSidebarOpen(false)}
           />
         )}
 
         <aside
-          className={`fixed inset-y-0 left-0 z-30 w-72 transform bg-white/95 dark:bg-black/95 backdrop-blur-2xl border-r border-gray-200/50 dark:border-gray-800/50 shadow-2xl shadow-gray-900/10 dark:shadow-black/50 transition-all duration-300 ease-in-out ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0`}
+          className={`fixed inset-y-0 left-0 z-30 w-64 sm:w-72 transform bg-white/95 dark:bg-black/95 backdrop-blur-2xl border-r border-gray-200/50 dark:border-gray-800/50 shadow-2xl shadow-gray-900/10 dark:shadow-black/50 transition-all duration-300 ease-in-out ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0`}
         >
-          <div className="p-6">
-            <div className="flex items-center justify-between mb-8">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-2xl bg-gradient-to-br from-rose-500 via-rose-600 to-orange-500 flex items-center justify-center shadow-lg shadow-rose-500/30">
-                  <LayoutDashboard className="h-5 w-5 text-white" />
+          <div className="flex flex-col h-full p-4 sm:p-6">
+            <div className="flex items-center justify-between mb-6 sm:mb-8">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-xl sm:rounded-2xl bg-gradient-to-br from-rose-500 via-rose-600 to-orange-500 flex items-center justify-center shadow-lg shadow-rose-500/30">
+                  <LayoutDashboard className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-bold text-gray-900 dark:text-white">Admin Panel</h2>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">AvtoFix boshqaruvi</p>
+                  <h2 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white">Admin Panel</h2>
+                  <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400">AvtoFix boshqaruvi</p>
                 </div>
               </div>
               <button
-                className="rounded-xl p-2 text-gray-400 dark:text-white/50 transition-all hover:bg-gray-100 dark:hover:bg-white/10 hover:text-gray-600 dark:hover:text-white lg:hidden"
+                className="rounded-lg sm:rounded-xl p-1.5 sm:p-2 text-gray-400 dark:text-white/50 transition-all hover:bg-gray-100 dark:hover:bg-white/10 hover:text-gray-600 dark:hover:text-white lg:hidden"
                 onClick={() => setSidebarOpen(false)}
               >
-                <X className="h-5 w-5" />
+                <X className="h-4 w-4 sm:h-5 sm:w-5" />
               </button>
             </div>
 
-            <nav className="space-y-2">
+            <nav className="space-y-1.5 sm:space-y-2 flex-1 overflow-y-auto">
               {menuItems
                 .filter((item) => {
                   // Xodim uchun faqat "users" va "categories" yashirilgan
@@ -4054,25 +4054,25 @@ const AdminPanel = () => {
                         navigate(`/admin/${item.id}`);
                         setSidebarOpen(false);
                       }}
-                      className={`group relative flex w-full items-center gap-4 rounded-2xl px-4 py-3.5 text-left text-sm font-semibold transition-all duration-200 ${isActive
+                      className={`group relative flex w-full items-center gap-2.5 sm:gap-4 rounded-xl sm:rounded-2xl px-3 sm:px-4 py-2.5 sm:py-3.5 text-left text-xs sm:text-sm font-semibold transition-all duration-200 ${isActive
                         ? "bg-gradient-to-r from-rose-500 via-rose-600 to-orange-500 text-white shadow-lg shadow-rose-500/30 transform scale-[1.02]"
                         : "text-gray-700 dark:text-white/70 hover:bg-gray-100/80 dark:hover:bg-white/10 hover:text-gray-900 dark:hover:text-white hover:transform hover:scale-[1.01]"
                         } ${isDisabled ? "opacity-50 cursor-not-allowed" : ""}`}
                     >
                       {isActive && (
-                        <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-rose-500 via-rose-600 to-orange-500 opacity-20 blur-xl" />
+                        <div className="absolute inset-0 rounded-xl sm:rounded-2xl bg-gradient-to-r from-rose-500 via-rose-600 to-orange-500 opacity-20 blur-xl" />
                       )}
                       <span
-                        className={`relative flex h-10 w-10 items-center justify-center rounded-xl transition-all ${isActive
+                        className={`relative flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-lg sm:rounded-xl transition-all ${isActive
                           ? "bg-white/20 text-white shadow-lg"
                           : "bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-white/70 group-hover:bg-gray-200 dark:group-hover:bg-white/20"
                           }`}
                       >
-                        <Icon className="h-5 w-5" />
+                        <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
                       </span>
-                      <span className="relative">{item.label}</span>
+                      <span className="relative truncate">{item.label}</span>
                       {isActive && (
-                        <div className="absolute right-4 h-2 w-2 rounded-full bg-white/60 animate-pulse" />
+                        <div className="absolute right-3 sm:right-4 h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-white/60 animate-pulse" />
                       )}
                     </button>
                   );
@@ -4080,17 +4080,17 @@ const AdminPanel = () => {
             </nav>
 
             {/* User info at bottom */}
-            <div className="absolute bottom-6 left-6 right-6">
-              <div className="rounded-2xl bg-gradient-to-r from-gray-100/80 to-gray-50/80 dark:from-white/10 dark:to-white/5 p-4 border border-gray-200/50 dark:border-white/10">
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-rose-500 to-orange-500 flex items-center justify-center text-white text-sm font-bold shadow-lg">
+            <div className="mt-4 sm:mt-6">
+              <div className="rounded-xl sm:rounded-2xl bg-gradient-to-r from-gray-100/80 to-gray-50/80 dark:from-white/10 dark:to-white/5 p-3 sm:p-4 border border-gray-200/50 dark:border-white/10">
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg sm:rounded-xl bg-gradient-to-br from-rose-500 to-orange-500 flex items-center justify-center text-white text-xs sm:text-sm font-bold shadow-lg flex-shrink-0">
                     {currentUser?.name?.charAt(0).toUpperCase() || "A"}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                    <p className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white truncate">
                       {currentUser?.name || "Admin"}
                     </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">
+                    <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 capitalize">
                       {currentUser?.role || "admin"}
                     </p>
                   </div>
@@ -4100,52 +4100,52 @@ const AdminPanel = () => {
           </div>
         </aside>
 
-        <main className="relative z-10 flex-1 overflow-y-auto p-4 lg:p-8 lg:ml-72">
+        <main className="relative z-10 flex-1 overflow-y-auto p-3 sm:p-4 lg:p-8 lg:ml-64 xl:ml-72">
           {/* Enhanced Admin Navbar */}
-          <div className="mb-6 flex items-center justify-between rounded-2xl border border-gray-200/60 dark:border-white/10 bg-white/80 dark:bg-black/40 backdrop-blur-2xl px-4 py-4 shadow-xl shadow-gray-900/5 dark:shadow-black/20">
-            <div className="flex items-center gap-3">
+          <div className="mb-4 sm:mb-6 flex items-center justify-between rounded-xl sm:rounded-2xl border border-gray-200/60 dark:border-white/10 bg-white/80 dark:bg-black/40 backdrop-blur-2xl px-3 sm:px-4 py-3 sm:py-4 shadow-xl shadow-gray-900/5 dark:shadow-black/20">
+            <div className="flex items-center gap-2 sm:gap-3">
               {/* Mobile menu button with enhanced styling */}
               <button
-                className="group flex items-center justify-center rounded-xl border border-gray-200/60 dark:border-white/15 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-white/5 dark:to-white/10 p-3 text-gray-700 dark:text-white/80 transition-all duration-200 hover:border-rose-400/50 hover:from-rose-50 hover:to-rose-100 dark:hover:from-rose-500/10 dark:hover:to-rose-500/20 hover:text-rose-700 dark:hover:text-white hover:shadow-lg hover:shadow-rose-500/20 lg:hidden"
+                className="group flex items-center justify-center rounded-lg sm:rounded-xl border border-gray-200/60 dark:border-white/15 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-white/5 dark:to-white/10 p-2 sm:p-3 text-gray-700 dark:text-white/80 transition-all duration-200 hover:border-rose-400/50 hover:from-rose-50 hover:to-rose-100 dark:hover:from-rose-500/10 dark:hover:to-rose-500/20 hover:text-rose-700 dark:hover:text-white hover:shadow-lg hover:shadow-rose-500/20 lg:hidden"
                 onClick={() => setSidebarOpen((prev) => !prev)}
               >
-                <Menu className="h-5 w-5 transition-transform group-hover:scale-110" />
+                <Menu className="h-4 w-4 sm:h-5 sm:w-5 transition-transform group-hover:scale-110" />
               </button>
 
               <Link
                 to="/"
-                className="group flex items-center justify-center rounded-xl border border-gray-200/60 dark:border-white/15 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-white/5 dark:to-white/10 p-3 sm:px-4 sm:py-3 text-gray-700 dark:text-white/80 transition-all duration-200 hover:border-blue-400/50 hover:from-blue-50 hover:to-blue-100 dark:hover:from-blue-500/10 dark:hover:to-blue-500/20 hover:text-blue-700 dark:hover:text-white hover:shadow-lg hover:shadow-blue-500/20"
+                className="group flex items-center justify-center rounded-lg sm:rounded-xl border border-gray-200/60 dark:border-white/15 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-white/5 dark:to-white/10 p-2 sm:p-3 text-gray-700 dark:text-white/80 transition-all duration-200 hover:border-blue-400/50 hover:from-blue-50 hover:to-blue-100 dark:hover:from-blue-500/10 dark:hover:to-blue-500/20 hover:text-blue-700 dark:hover:text-white hover:shadow-lg hover:shadow-blue-500/20"
                 title="Bosh sahifa"
               >
-                <Home className="h-5 w-5 transition-transform group-hover:scale-110" />
-                <span className="hidden sm:inline ml-2 text-sm font-semibold">Bosh sahifa</span>
+                <Home className="h-4 w-4 sm:h-5 sm:w-5 transition-transform group-hover:scale-110" />
+                <span className="hidden md:inline ml-2 text-xs sm:text-sm font-semibold">Bosh sahifa</span>
               </Link>
 
               <button
                 type="button"
                 onClick={() => navigate(-1)}
-                className="group flex items-center justify-center rounded-xl border border-gray-200/60 dark:border-white/15 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-white/5 dark:to-white/10 p-3 sm:px-4 sm:py-3 text-gray-700 dark:text-white/80 transition-all duration-200 hover:border-purple-400/50 hover:from-purple-50 hover:to-purple-100 dark:hover:from-purple-500/10 dark:hover:to-purple-500/20 hover:text-purple-700 dark:hover:text-white hover:shadow-lg hover:shadow-purple-500/20"
+                className="group flex items-center justify-center rounded-lg sm:rounded-xl border border-gray-200/60 dark:border-white/15 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-white/5 dark:to-white/10 p-2 sm:p-3 text-gray-700 dark:text-white/80 transition-all duration-200 hover:border-purple-400/50 hover:from-purple-50 hover:to-purple-100 dark:hover:from-purple-500/10 dark:hover:to-purple-500/20 hover:text-purple-700 dark:hover:text-white hover:shadow-lg hover:shadow-purple-500/20"
                 title="Orqaga"
               >
-                <ArrowLeft className="h-5 w-5 transition-transform group-hover:scale-110" />
-                <span className="hidden sm:inline ml-2 text-sm font-semibold">Orqaga</span>
+                <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5 transition-transform group-hover:scale-110" />
+                <span className="hidden md:inline ml-2 text-xs sm:text-sm font-semibold">Orqaga</span>
               </button>
             </div>
 
-            <div className="flex items-center gap-4">
-              <div className="hidden md:flex flex-col items-end">
-                <span className="text-sm font-semibold text-gray-900 dark:text-white truncate max-w-[150px]">
+            <div className="flex items-center gap-2 sm:gap-4">
+              <div className="hidden lg:flex flex-col items-end">
+                <span className="text-xs sm:text-sm font-semibold text-gray-900 dark:text-white truncate max-w-[120px] sm:max-w-[150px]">
                   {currentUser?.name || "Admin"}
                 </span>
-                <span className="text-xs text-gray-500 dark:text-gray-400 capitalize">
+                <span className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 capitalize">
                   {currentUser?.role || "admin"}
                 </span>
               </div>
               <div className="relative">
-                <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-rose-500 via-rose-600 to-orange-500 flex items-center justify-center text-white text-sm font-bold shadow-xl shadow-rose-500/30 ring-4 ring-white/20 dark:ring-black/20">
+                <div className="h-9 w-9 sm:h-12 sm:w-12 rounded-xl sm:rounded-2xl bg-gradient-to-br from-rose-500 via-rose-600 to-orange-500 flex items-center justify-center text-white text-xs sm:text-sm font-bold shadow-xl shadow-rose-500/30 ring-2 sm:ring-4 ring-white/20 dark:ring-black/20">
                   {currentUser?.name?.charAt(0).toUpperCase() || "A"}
                 </div>
-                <div className="absolute -bottom-1 -right-1 h-4 w-4 rounded-full bg-green-500 border-2 border-white dark:border-gray-900 animate-pulse" />
+                <div className="absolute -bottom-0.5 -right-0.5 sm:-bottom-1 sm:-right-1 h-3 w-3 sm:h-4 sm:w-4 rounded-full bg-green-500 border-2 border-white dark:border-gray-900 animate-pulse" />
               </div>
             </div>
           </div>
